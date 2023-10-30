@@ -1,0 +1,7 @@
+pyinstaller.txt
+/icon.psd
+/.idea
+/venv*
+*.log
+/.vscode
+
