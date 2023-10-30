@@ -1,7 +1,5 @@
 pyinstaller.txt
-/icon.psd
-/.idea
-/venv*
+icon.psd
+.idea
+venv*
 *.log
-/.vscode
-
