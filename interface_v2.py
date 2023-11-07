@@ -22,17 +22,17 @@ plt.style.use('fast')  # стиль графиков
 def import_file():
     """Функция импорта файла и его обработки для правильной работы функций"""
     global file_name, climate
-    file_name= fd.askopenfilename(filetypes=(("Файлы Excel(XLSX) или CSV", ("*.xlsx", ".csv")), ("Все файлы", "*.*")))
+    file_name = fd.askopenfilename(filetypes=(("Файлы Excel(XLSX) или CSV", ("*.xlsx", ".csv")), ("Все файлы", "*.*")))
     file_chosen_label['text'] = 'Файл "{}" выбран'.format(file_name.split('/')[-1])
-    file_chosen_label['foreground']='green'
+    file_chosen_label['foreground'] = 'green'
     filename, file_extension = os.path.splitext(file_name)
     if file_extension == '.xlsx':
-            starting_row = find_starting_row_xlsx(file_name, "Дата")
-            climate = pd.read_excel(file_name, skiprows=starting_row, index_col='Дата', parse_dates=True)
+        starting_row = find_starting_row_xlsx(file_name, "Дата")
+        climate = pd.read_excel(file_name, skiprows=starting_row, index_col='Дата', parse_dates=True)
     elif file_extension == '.csv':
-            starting_row = find_starting_row_csv(file_name, "Дата")
-            climate = pd.read_csv(file_name, skiprows=starting_row, delimiter=';',
-                                  index_col='Дата', encoding='cp1251', parse_dates=True)
+        starting_row = find_starting_row_csv(file_name, "Дата")
+        climate = pd.read_csv(file_name, skiprows=starting_row, delimiter=';',
+                              index_col='Дата', encoding='cp1251', parse_dates=True)
     climate = climate.apply(pd.to_numeric, errors='coerce', axis=1)
     climate = climate.replace(9999, np.nan)
     climate.index = pd.to_datetime(climate.index, format='%d.%m.%Y')
@@ -70,14 +70,15 @@ def separate_climate(climate_data):
     precipitation_climate = climate_data.iloc[:, 5:6]
     eff_temp_climate = climate_data.iloc[:, 6:7]
     
-    return (max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate)
+    return (max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate,
+            wind_climate, precipitation_climate, eff_temp_climate)
 
 
 def add_fig():
     """Создание окна с результатами нажатия кнопок"""
     global fig
     fig = tk.Toplevel()
-    fig.geometry('{}x{}+{}+0'.format(w*2, h, w))
+    fig.geometry(f'{w*2}x{h}+{w}+0')
     fig.wm_iconbitmap('climate.ico')
     return fig
 
@@ -86,12 +87,10 @@ def add_frames():
     """Создание рамки со скроллбарами"""
     global second_frame
 
-
     def on_mousewheel(event):
         my_canvas.yview_scroll(-1 * (event.delta // 120), "units")
 
-
-    main_frame=tk.Frame(fig)
+    main_frame = tk.Frame(fig)
     main_frame.pack(fill=tk.BOTH, expand=1)
 
     sec = tk.Frame(main_frame)
@@ -100,35 +99,33 @@ def add_frames():
     my_canvas = tk.Canvas(main_frame)
     my_canvas.pack(side=tk.LEFT, fill=tk.BOTH,expand=1)
 
-    x_scrollbar = ttk.Scrollbar(sec,orient=tk.HORIZONTAL,command=my_canvas.xview)
+    x_scrollbar = ttk.Scrollbar(sec,orient=tk.HORIZONTAL, command=my_canvas.xview)
     x_scrollbar.pack(side=tk.BOTTOM,fill=tk.X)
 
-    y_scrollbar = ttk.Scrollbar(main_frame,orient=tk.VERTICAL,command=my_canvas.yview)
+    y_scrollbar = ttk.Scrollbar(main_frame,orient=tk.VERTICAL, command=my_canvas.yview)
     y_scrollbar.pack(side=tk.RIGHT,fill=tk.Y)
 
     my_canvas.configure(xscrollcommand=x_scrollbar.set)
     my_canvas.configure(yscrollcommand=y_scrollbar.set)
-    my_canvas.bind("<Configure>",lambda e: my_canvas.config(scrollregion= my_canvas.bbox(tk.ALL))) 
+    my_canvas.bind("<Configure>",lambda e: my_canvas.config(scrollregion=my_canvas.bbox(tk.ALL)))
     fig.bind("<MouseWheel>", on_mousewheel)
 
     second_frame = tk.Frame(my_canvas)
-    my_canvas.create_window((5,5),window= second_frame, anchor="nw")
+    my_canvas.create_window((5, 5), window=second_frame, anchor="nw")
     return second_frame
 
 
 def add_canvas(graphs):
     """Создание холста с панелью инструментов для графиков"""
     global canvas
-    
-    
+
     def add_toolbar():
         global toolbar
-        toolbar = NavigationToolbar2Tk(canvas, second_frame)  #управление графиками
+        toolbar = NavigationToolbar2Tk(canvas, second_frame)  # управление графиками
         toolbar.update()
         toolbar.pack(side=tk.TOP, fill=tk.BOTH)
 
-
-    canvas = FigureCanvasTkAgg(graphs, second_frame)  #холст
+    canvas = FigureCanvasTkAgg(graphs, second_frame)  # холст
     canvas.draw()
     canvas.get_tk_widget().pack(side=tk.TOP, expand=True)
     add_toolbar()
@@ -155,27 +152,33 @@ def raschet():
 
     def math_stat(parameter):
         global second_frame
-        ttk.Label(second_frame, text =  parameter.columns[0], font=tkFont.Font(family='Calibri',size=14)).pack()
-        ttk.Label(second_frame, text =  'Математическое ожидание = ' + "%.2f" % parameter.iloc[:,0].mean()).pack()
-        ttk.Label(second_frame, text =  'Дисперсия = ' + "%.2f" % parameter.iloc[:,0].std() ** 2).pack() 
-        ttk.Label(second_frame, text =  'Среднеквадратическое отклонение = ' + "%.2f" % parameter.iloc[:,0].std()).pack() 
-        ttk.Label(second_frame, text =  'Наименьшее значение = ' + "%.2f" % parameter.iloc[:,0].min()).pack()
-        ttk.Label(second_frame, text =  'Наибольшее значение = ' + "%.2f" % parameter.iloc[:,0].max()).pack()
-        ttk.Label(second_frame, text =  'Ошибка средней арифметической = ' + "%.2f" % (parameter.iloc[:,0].std()/parameter.iloc[:,0].count() ** 0.5)).pack()
-        ttk.Label(second_frame, text =  'Коэффициент вариации = ' + "%.2f" % (parameter.iloc[:,0].std()/parameter.iloc[:,0].mean() * 100) + ' %' + '\n').pack()
+        ttk.Label(second_frame, text=parameter.columns[0], font=tkFont.Font(family='Calibri', size=14)).pack()
+        ttk.Label(second_frame, text=f'Математическое ожидание = {round(parameter.iloc[:, 0].mean(), 2)}').pack()
+        ttk.Label(second_frame, text=f'Дисперсия = {round(parameter.iloc[:, 0].std() ** 2, 2)}').pack()
+        ttk.Label(second_frame, text=f'Среднеквадратическое отклонение = {round(parameter.iloc[:, 0].std(), 2)}').pack()
+        ttk.Label(second_frame, text=f'Наименьшее значение = {round(parameter.iloc[:, 0].min(), 2)}').pack()
+        ttk.Label(second_frame, text=f'Наибольшее значение = {round(parameter.iloc[:, 0].max(), 2)}').pack()
+        ttk.Label(second_frame, text=f'Ошибка средней арифметической = '
+                                     f'{round(parameter.iloc[:, 0].std() / parameter.iloc[:, 0].count() ** 0.5, 2)}').pack()
+        ttk.Label(second_frame, text=f'Коэффициент вариации = '
+                                     f'{round(parameter.iloc[:, 0].std()/parameter.iloc[:,0].mean() * 100, 2)} %' +
+                                     '\n').pack()
 
     def export_to_file():
         global stat_file
 
         def print_climate(parameter):
             stat_file.write(f'{parameter.columns[0]}:' + '\n')
-            stat_file.write("Математическое ожидание = " + "%.2f" % parameter.iloc[:,0].mean() + ';\n')
-            stat_file.write('Дисперсия = ' + "%.2f" % parameter.iloc[:,0].std() ** 2 + ';\n')
-            stat_file.write('Среднеквадратическое отклонение = ' + "%.2f" % parameter.iloc[:,0].std() + ';\n')
-            stat_file.write('Наименьшее значение = ' + "%.2f" % parameter.iloc[:,0].min() + ';\n')
-            stat_file.write('Наибольшее значение = ' + "%.2f" % parameter.iloc[:,0].max() + ';\n')
-            stat_file.write('Ошибка средней арифметической = ' + "%.2f" % (parameter.iloc[:,0].std()/parameter.iloc[:,0].count() ** 0.5) + ';\n')
-            stat_file.write('Коэффициент вариации = ' + "%.2f" % (parameter.iloc[:,0].std()/parameter.iloc[:,0].mean() * 100) + ' %' + ';\n' + '\n')
+            stat_file.write(f'Математическое ожидание = {round(parameter.iloc[:, 0].mean(), 2)}' + ';\n')
+            stat_file.write(f'Дисперсия = {round(parameter.iloc[:, 0].std() ** 2, 2)}' + ';\n')
+            stat_file.write(f'Среднеквадратическое отклонение = {round(parameter.iloc[:, 0].std(), 2)}' + ';\n')
+            stat_file.write(f'Наименьшее значение = {round(parameter.iloc[:, 0].min(), 2)}' + ';\n')
+            stat_file.write(f'Наибольшее значение = {round(parameter.iloc[:, 0].max(), 2)}' + ';\n')
+            stat_file.write(f'Ошибка средней арифметической = '
+                            f'{round(parameter.iloc[:, 0].std() / parameter.iloc[:, 0].count() ** 0.5, 2)}' + ';\n')
+            stat_file.write(f'Коэффициент вариации = '
+                            f'{round(parameter.iloc[:, 0].std()/parameter.iloc[:,0].mean() * 100, 2)} %' +
+                            '\n' + ';\n' + '\n')
 
         time = datetime.now().strftime('%Y-%m-%d')
         stat_file = open(f"Files\{time} - {file_name.split('/')[-1].split('.')[0]}.txt", "w+")
@@ -190,18 +193,18 @@ def raschet():
     result = separate_climate(climate)
 
     add_fig()
-    fig.title('Статистические характеристики "{}"'.format(file_name.split('/')[-1]))
+    fig.title(f'Статистические характеристики "{file_name.split("/")[-1]}"')
 
     add_frames()
 
-    ttk.Label(second_frame, text='Статистические характеристики "{}" \n'.format(file_name.split('/')[-1]),
-              font=tkFont.Font(family='Calibri',size=18)).pack()
+    ttk.Label(second_frame, text=f'Статистические характеристики "{file_name.split("/")[-1]}" \n',
+              font=tkFont.Font(family='Calibri', size=18)).pack()
 
     # Вычисление и отображение статистических характеристик
     for parameter in result:
         math_stat(parameter)
 
-    ttk.Button(second_frame, text = 'Сохранить в файл', command = export_to_file).pack()
+    ttk.Button(second_frame, text='Сохранить в файл', command=export_to_file).pack()
 
 
 def selected_raschet():
@@ -209,31 +212,31 @@ def selected_raschet():
 
     def math_stat(parameter):
         global second_frame
-        ttk.Label(second_frame, text =  parameter.columns[0], font=tkFont.Font(family='Calibri',size=14)).pack()
-        ttk.Label(second_frame, text =  'Математическое ожидание = ' + "%.2f" % parameter.iloc[:,0].mean()).pack()
-        ttk.Label(second_frame, text =  'Дисперсия = ' + "%.2f" % parameter.iloc[:,0].std() ** 2).pack() 
-        ttk.Label(second_frame, text =  'Среднеквадратическое отклонение = ' + "%.2f" % parameter.iloc[:,0].std()).pack() 
-        ttk.Label(second_frame, text =  'Наименьшее значение = ' + "%.2f" % parameter.iloc[:,0].min()).pack()
-        ttk.Label(second_frame, text =  'Наибольшее значение = ' + "%.2f" % parameter.iloc[:,0].max()).pack()
-        ttk.Label(second_frame, text =  'Ошибка средней арифметической = ' + "%.2f" % (parameter.iloc[:,0].std()/parameter.iloc[:,0].count() ** 0.5)).pack()
-        ttk.Label(second_frame, text =  'Коэффициент вариации = ' + "%.2f" % (parameter.iloc[:,0].std()/parameter.iloc[:,0].mean() * 100) + ' %' + '\n').pack()
-
+        ttk.Label(second_frame, text=parameter.columns[0], font=tkFont.Font(family='Calibri', size=14)).pack()
+        ttk.Label(second_frame, text=f'Математическое ожидание = {round(parameter.iloc[:, 0].mean(), 2)}').pack()
+        ttk.Label(second_frame, text=f'Дисперсия = {round(parameter.iloc[:,0].std() ** 2, 2)}').pack()
+        ttk.Label(second_frame, text=f'Среднеквадратическое отклонение = {round(parameter.iloc[:,0].std(), 2)}').pack()
+        ttk.Label(second_frame, text=f'Наименьшее значение = {round(parameter.iloc[:,0].min(), 2)}').pack()
+        ttk.Label(second_frame, text=f'Наибольшее значение = {round(parameter.iloc[:,0].max(), 2)}').pack()
+        ttk.Label(second_frame, text=f'Ошибка средней арифметической = {round(parameter.iloc[:,0].std()/parameter.iloc[:, 0].count() ** 0.5, 2)}').pack()
+        ttk.Label(second_frame, text=f'Коэффициент вариации = {round(parameter.iloc[:,0].std()/parameter.iloc[:,0].mean() * 100, 2)}' + ' %' + '\n').pack()
 
     def export_to_file():
         global stat_file
+
         def print_climate(parameter):
             stat_file.write(f'{parameter.columns[0]}:' + '\n')
-            stat_file.write("Математическое ожидание = " + "%.2f" % parameter.iloc[:,0].mean() + ';\n')
-            stat_file.write('Дисперсия = ' + "%.2f" % parameter.iloc[:,0].std() ** 2 + ';\n')
-            stat_file.write('Среднеквадратическое отклонение = ' + "%.2f" % parameter.iloc[:,0].std() + ';\n')
-            stat_file.write('Наименьшее значение = ' + "%.2f" % parameter.iloc[:,0].min() + ';\n')
-            stat_file.write('Наибольшее значение = ' + "%.2f" % parameter.iloc[:,0].max() + ';\n')
-            stat_file.write('Ошибка средней арифметической = ' + "%.2f" % (parameter.iloc[:,0].std()/parameter.iloc[:, 0].count() ** 0.5) + ';\n')
-            stat_file.write('Коэффициент вариации = ' + "%.2f" % (parameter.iloc[:,0].std()/parameter.iloc[:,0].mean() * 100) + ' %' + ';\n' + '\n')
-
+            stat_file.write(f'Математическое ожидание = {round(parameter.iloc[:, 0].mean(), 2)}' + ';\n')
+            stat_file.write(f'Дисперсия = {round(parameter.iloc[:,0].std() ** 2, 2)}' + ';\n')
+            stat_file.write(f'Среднеквадратическое отклонение = {round(parameter.iloc[:,0].std(), 2)}' + ';\n')
+            stat_file.write(f'Наименьшее значение = {round(parameter.iloc[:,0].min(), 2)}' + ';\n')
+            stat_file.write(f'Наибольшее значение = {round(parameter.iloc[:,0].max(), 2)}' + ';\n')
+            stat_file.write(f'Ошибка средней арифметической = {round(parameter.iloc[:,0].std()/parameter.iloc[:, 0].count() ** 0.5, 2)}' + ';\n')
+            stat_file.write(f'Коэффициент вариации = {round(parameter.iloc[:,0].std()/parameter.iloc[:,0].mean() * 100, 2)}' + ' %' + ';\n' + '\n')
 
         time = datetime.now().strftime('%Y-%m-%d')
-        stat_file = open(f"Files\{time} - {file_name.split('/')[-1].split('.')[0]} ({first_date}) - ({second_date}).txt", "w+")
+        stat_file = open(f"Files\{time} - {file_name.split('/')[-1].split('.')[0]} "
+                         f"({first_date}) - ({second_date}).txt", "w+")
         for parameter in result:
             print_climate(parameter)
         stat_file.close()
@@ -244,37 +247,38 @@ def selected_raschet():
 
     result = separate_climate(climate)
 
-    first_date = '{}-{}-{}'.format(combobox_start_years.get(), combobox_start_months.get(), combobox_start_days.get())
-    second_date = '{}-{}-{}'.format(combobox_finish_years.get(), combobox_finish_months.get(), combobox_finish_days.get())
+    first_date = f'{combobox_start_years.get()}-{combobox_start_months.get()}-{combobox_start_days.get()}'
+    second_date = f'{combobox_finish_years.get()}-{combobox_finish_months.get()}-{combobox_finish_days.get()}'
 
     try:
         add_fig()
-        fig.title('Статистические характеристики в указанном диапазоне дат ({} - {}) "{}"'.format(first_date, second_date, file_name.split('/')[-1]))
-
+        fig.title(f'Статистические характеристики в указанном диапазоне дат '
+                  f'({first_date} - {second_date}) "{file_name.split("/")[-1]}"')
         add_frames()
 
-        ttk.Label(second_frame, text='Статистические характеристики в указанном диапазоне дат ({} - {}) "{}" '.format(first_date, second_date, file_name.split('/')[-1]),
-                    font=tkFont.Font(family='Calibri',size=18)).pack()
+        ttk.Label(second_frame, text=f'Статистические характеристики в указанном диапазоне дат '
+                                     f'({first_date} - {second_date}) "{file_name.split("/")[-1]}"',
+                  font=tkFont.Font(family='Calibri',size=18)).pack()
+
         for parameter in result:
             math_stat(parameter.loc[first_date:second_date])
 
-        ttk.Button(second_frame, text = 'Сохранить в файл', command = export_to_file).pack()
+        ttk.Button(second_frame, text='Сохранить в файл', command=export_to_file).pack()
     except:
-            fig.destroy()
-            mb.showerror("Ошибка", "Не выбран диапазон дат")
+        fig.destroy()
+        mb.showerror("Ошибка", "Не выбран диапазон дат")
 
 
 def graph_climate():
     """Построение графиков распределения"""
 
     def plot_climate(parameter):
-        graphs = Figure(figsize=size, dpi = 100)
+        graphs = Figure(figsize=size, dpi=100)
         ax = graphs.add_subplot(1,1,1)
-        ax.plot(parameter, 'o', markersize = 1, label = parameter.columns[0], alpha = 0.5)       
+        ax.plot(parameter, 'o', markersize=1, label=parameter.columns[0], alpha=0.5)
         ax.set_title(parameter.columns[0])
         graphs.autofmt_xdate()
         add_canvas(graphs)
-
 
     if file_name == '':
         mb.showerror("Ошибка", "Не выбран файл для обработки")
@@ -284,12 +288,12 @@ def graph_climate():
     result = separate_climate(climate)
 
     add_fig()
-    fig.title('Графики распределения климатических характеристик "{}"'.format(file_name.split('/')[-1]))
+    fig.title(f'Графики распределения климатических характеристик "{file_name.split("/")[-1]}"')
 
     add_frames()
 
-    ttk.Label(second_frame, text =  'Графики распределения климатических характеристик "{}" \n'.format(file_name.split('/')[-1]), 
-                font=tkFont.Font(family='Calibri',size=32)).pack()
+    ttk.Label(second_frame, text=f'Графики распределения климатических характеристик "{file_name.split("/")[-1]}" \n',
+              font=tkFont.Font(family='Calibri', size=32)).pack()
 
     for parameter in result:
         plot_climate(parameter)
@@ -1317,140 +1321,152 @@ def main():
 
     w = root.winfo_screenwidth() // 3
     h = root.winfo_screenheight() - 70
-    root.geometry('{}x{}+0+0'.format(w, h))
+    root.geometry(f'{w}x{h}+0+0')
     root.wm_iconbitmap('climate.ico')
 
     # Рамка для виджетов
-    frame = tk.Frame(root, padx= 50, pady = 50)
+    frame = tk.Frame(root, padx=50, pady=50)
     frame.pack(expand=True)
 
     # Кнопка выбора файла
-    import_xlsx_file_button = ttk.Button(frame, text = 'Выбрать файл', command = import_file)
-    import_xlsx_file_button.grid(row = 0, column=0, columnspan=3)
+    import_xlsx_file_button = ttk.Button(frame, text='Выбрать файл', command=import_file)
+    import_xlsx_file_button.grid(row=0, column=0, columnspan=3)
 
     # Метка выбора файла
-    file_chosen_label = ttk.Label(frame, text='Файл не выбран', foreground='red', font=tkFont.Font(family='Calibri',size=12))
+    file_chosen_label = ttk.Label(frame, text='Файл не выбран', foreground='red',
+                                  font=tkFont.Font(family='Calibri', size=12))
     file_chosen_label.grid(row=1, column=0, columnspan=3)
 
     # Кнопка таблицы данных
-    table_button = ttk.Button(frame, text = 'Таблица данных', command = table_climate)
-    table_button.grid(row = 2, column= 0, columnspan=3)
+    table_button = ttk.Button(frame, text='Таблица данных', command=table_climate)
+    table_button.grid(row=2, column=0, columnspan=3)
 
     # Кнопка мат статистики
-    math_button = ttk.Button(frame, text = 'Статистические характеристики', command = raschet)
-    math_button.grid(row = 3, column= 0, columnspan=3)
+    math_button = ttk.Button(frame, text='Статистические характеристики', command=raschet)
+    math_button.grid(row=3, column=0, columnspan=3)
 
-    # Кнопка пострения графиков
-    graph_button = ttk.Button(frame, text = 'Построить графики распределения', command = graph_climate)
-    graph_button.grid(row = 4, column= 0, columnspan=3)
+    # Кнопка построения графиков
+    graph_button = ttk.Button(frame, text='Построить графики распределения', command=graph_climate)
+    graph_button.grid(row=4, column=0, columnspan=3)
 
     # Кнопка годичных графиков
-    graph_year_button = ttk.Button(frame, text = 'Построить графики среднегодовых значений', command = graph_year_climate)
-    graph_year_button.grid(row = 5, column= 0, columnspan=3)
+    graph_year_button = ttk.Button(frame, text='Построить графики среднегодовых значений', command=graph_year_climate)
+    graph_year_button.grid(row=5, column=0, columnspan=3)
 
     # Кнопка месячных графиков
-    graph_month_button = ttk.Button(frame, text = 'Построить графики среднемесячных значений', command = graph_month_climate)
-    graph_month_button.grid(row = 6, column= 0, columnspan=3)
+    graph_month_button = ttk.Button(frame, text='Построить графики среднемесячных значений',
+                                    command=graph_month_climate)
+    graph_month_button.grid(row=6, column=0, columnspan=3)
 
     # Кнопка построения гистограмм
-    histo_button = ttk.Button(frame, text = 'Построить гистограммы плотности распределения', command = histo_climate)
-    histo_button.grid(row = 7, column= 0, columnspan=3)
+    histo_button = ttk.Button(frame, text='Построить гистограммы плотности распределения', command=histo_climate)
+    histo_button.grid(row=7, column=0, columnspan=3)
 
     # Кнопка построения kde
-    graph_year_button = ttk.Button(frame, text = 'Построить графики плотности распределения', command = kde_climate)
-    graph_year_button.grid(row = 8, column= 0, columnspan=3)
+    graph_year_button = ttk.Button(frame, text='Построить графики плотности распределения', command=kde_climate)
+    graph_year_button.grid(row=8, column=0, columnspan=3)
 
     # Кнопка среднего по месяцам
-    graph_mean_month_button = ttk.Button(frame, text = 'Построить графики средних по месяцам', command = graph_mean_months)
-    graph_mean_month_button.grid(row = 9, column= 0, columnspan=3)
+    graph_mean_month_button = ttk.Button(frame, text='Построить графики средних по месяцам', command=graph_mean_months)
+    graph_mean_month_button.grid(row=9, column=0, columnspan=3)
 
     # Кнопка вывода 2 диапазонов
-    graph_compare_mean_month_button = ttk.Button(frame, text = 'Сравнение средних по месяцам в двух диапазонах', command = graph_compare_mean_months)
-    graph_compare_mean_month_button.grid(row = 10, column= 0, columnspan=3)
+    graph_compare_mean_month_button = ttk.Button(frame, text='Сравнение средних по месяцам в двух диапазонах',
+                                                 command=graph_compare_mean_months)
+    graph_compare_mean_month_button.grid(row=10, column=0, columnspan=3)
 
     # Кнопка фильтра средней температуры
-    filter_mean_temp_button = ttk.Button(frame, text = 'Фильтр средней температуры', command = filter_mean_temp)
-    filter_mean_temp_button.grid(row = 11, column= 0, columnspan=3)
+    filter_mean_temp_button = ttk.Button(frame, text='Фильтр средней температуры', command=filter_mean_temp)
+    filter_mean_temp_button.grid(row=11, column=0, columnspan=3)
 
     # Кнопка фильтра максимальной температуры
-    filter_max_temp_button = ttk.Button(frame, text = 'Фильтр максимальной температуры', command = filter_max_temp)
-    filter_max_temp_button.grid(row = 12, column= 0, columnspan=3)
+    filter_max_temp_button = ttk.Button(frame, text='Фильтр максимальной температуры', command=filter_max_temp)
+    filter_max_temp_button.grid(row=12, column=0, columnspan=3)
 
     # Кнопка фильтра минимальной температуры
-    filter_min_temp_button = ttk.Button(frame, text = 'Фильтр минимальной температуры', command = filter_min_temp)
-    filter_min_temp_button.grid(row = 13, column= 0, columnspan=3)
+    filter_min_temp_button = ttk.Button(frame, text='Фильтр минимальной температуры', command=filter_min_temp)
+    filter_min_temp_button.grid(row=13, column=0, columnspan=3)
 
     # Кнопка фильтра атмосферного давления
-    filter_pressure_button = ttk.Button(frame, text = 'Фильтр атмосферного давления', command = filter_pressure)
-    filter_pressure_button.grid(row = 14, column= 0, columnspan=3)
+    filter_pressure_button = ttk.Button(frame, text='Фильтр атмосферного давления', command=filter_pressure)
+    filter_pressure_button.grid(row=14, column=0, columnspan=3)
 
     # Кнопка фильтра атмосферного давления
-    filter_precipitation_button = ttk.Button(frame, text = 'Фильтр количества осадков', command = filter_precipitation)
-    filter_precipitation_button.grid(row = 15, column= 0, columnspan=3)
+    filter_precipitation_button = ttk.Button(frame, text='Фильтр количества осадков', command=filter_precipitation)
+    filter_precipitation_button.grid(row=15, column=0, columnspan=3)
 
     # Кнопка wind_rose
-    wind_rose_button = ttk.Button(frame, text = 'Построить розу ветров', command = wind_rose)
-    wind_rose_button.grid(row = 16, column= 0, columnspan=3)
+    wind_rose_button = ttk.Button(frame, text='Построить розу ветров', command=wind_rose)
+    wind_rose_button.grid(row=16, column=0, columnspan=3)
 
     # Выбор дат
-    label = ttk.Label(frame, text='Выбор диапазона дат', font=tkFont.Font(family='Calibri',size=18))
+    label = ttk.Label(frame, text='Выбор диапазона дат', font=tkFont.Font(family='Calibri', size=18))
     label.grid(row=17, column=0, columnspan=3)
 
-    label_days = ttk.Label(frame, text='День', font=tkFont.Font(family='Calibri',size=14))
+    label_days = ttk.Label(frame, text='День', font=tkFont.Font(family='Calibri', size=14))
     label_days.grid(row=18, column=0)
 
-    label_months = ttk.Label(frame, text='Месяц', font=tkFont.Font(family='Calibri',size=14))
+    label_months = ttk.Label(frame, text='Месяц', font=tkFont.Font(family='Calibri', size=14))
     label_months.grid(row=18, column=1)
 
-    label_years = ttk.Label(frame, text='Год', font=tkFont.Font(family='Calibri',size=14))
+    label_years = ttk.Label(frame, text='Год', font=tkFont.Font(family='Calibri', size=14))
     label_years.grid(row=18, column=2)
 
-    combobox_start_days = ttk.Combobox(frame, textvariable= tk.StringVar(), values=[i for i in range(1,32)])
+    combobox_start_days = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1,32)])
     combobox_start_days.current(0)
     combobox_start_days.grid(row=19, column=0)
 
-    combobox_start_months = ttk.Combobox(frame, textvariable= tk.StringVar(), values=[i for i in range(1,13)])
+    combobox_start_months = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1,13)])
     combobox_start_months.current(0)
     combobox_start_months.grid(row=19, column=1)
 
-    combobox_start_years = ttk.Combobox(frame, textvariable= tk.StringVar(), values=[i for i in range(1960,2021)])
+    combobox_start_years = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1960,2021)])
     combobox_start_years.current(0)
     combobox_start_years.grid(row=19, column=2)
 
-    combobox_finish_days = ttk.Combobox(frame, textvariable= tk.StringVar(), values=[i for i in range(1,32)])
+    combobox_finish_days = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1,32)])
     combobox_finish_days.current(30)
     combobox_finish_days.grid(row=20, column=0)
 
-    combobox_finish_months = ttk.Combobox(frame, textvariable= tk.StringVar(), values=[i for i in range(1,13)])
+    combobox_finish_months = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1,13)])
     combobox_finish_months.current(11)
     combobox_finish_months.grid(row=20, column=1)
 
-    combobox_finish_years = ttk.Combobox(frame, textvariable= tk.StringVar(), values=[i for i in range(1960,2021)])
+    combobox_finish_years = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1960,2021)])
     combobox_finish_years.current(60)
     combobox_finish_years.grid(row=20, column=2)
 
     # Кнопка мат статистики в диапазоне
-    selected_math_button = ttk.Button(frame, text = 'Статистические характеристики в указанном диапазоне', command = selected_raschet)
-    selected_math_button.grid(row = 21, column= 0, columnspan=3)
+    selected_math_button = ttk.Button(frame, text='Статистические характеристики в указанном диапазоне',
+                                      command=selected_raschet)
+    selected_math_button.grid(row=21, column=0, columnspan=3)
 
     # Кнопка построения графика в диапазоне
-    select_graph_button = ttk.Button(frame, text = 'Построить графики в указанном диапазоне дат', command= graph_selected_climate)
-    select_graph_button.grid(row = 22, column=0,columnspan=3)
+    select_graph_button = ttk.Button(frame, text='Построить графики в указанном диапазоне дат',
+                                     command=graph_selected_climate)
+    select_graph_button.grid(row=22, column=0, columnspan=3)
 
     # Кнопка месячных графиков в указанном диапазоне
-    graph_selected_month_climate_button = ttk.Button(frame, text = 'Построить графики среднемесячных значений в указанном диапазоне дат', command = graph_selected_month_climate)
-    graph_selected_month_climate_button.grid(row = 23, column= 0, columnspan=3)
+    graph_selected_month_climate_button = ttk.Button(frame,
+                                                     text='Построить графики среднемесячных значений '
+                                                          'в указанном диапазоне дат',
+                                                     command=graph_selected_month_climate)
+    graph_selected_month_climate_button.grid(row=23, column=0, columnspan=3)
     
     # Кнопка построения гистограмм в диапазоне
-    histo_button = ttk.Button(frame, text = 'Построить гистограммы плотности распределения в указанном диапазоне', command = histo_selected_climate)
-    histo_button.grid(row = 24, column= 0, columnspan=3)
+    histo_button = ttk.Button(frame, text='Построить гистограммы плотности распределения в указанном диапазоне',
+                              command=histo_selected_climate)
+    histo_button.grid(row=24, column=0, columnspan=3)
 
     # Кнопка построения графиков плотности распределения в диапазоне
-    kde_selected_button = ttk.Button(frame, text = 'Построить графики плотности распределения в указанном диапазоне', command = kde_selected_climate)
-    kde_selected_button.grid(row = 25, column= 0, columnspan=3)
+    kde_selected_button = ttk.Button(frame, text='Построить графики плотности распределения в указанном диапазоне',
+                                     command=kde_selected_climate)
+    kde_selected_button.grid(row=25, column=0, columnspan=3)
     
     # Кнопка среднего по месяцам в указанном диапазоне
-    graph_selected_mean_month_button = ttk.Button(frame, text='Построить графики средних по месяцам в указанном диапазоне', command = graph_selected_mean_months)
+    graph_selected_mean_month_button = ttk.Button(frame,
+                                                  text='Построить графики средних по месяцам в указанном диапазоне',
+                                                  command=graph_selected_mean_months)
     graph_selected_mean_month_button.grid(row=26, column=0, columnspan=3)
 
     tk.mainloop()
