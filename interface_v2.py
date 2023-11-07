@@ -23,7 +23,7 @@ def import_file():
     """Функция импорта файла и его обработки для правильной работы функций"""
     global file_name, climate
     file_name = fd.askopenfilename(filetypes=(("Файлы Excel(XLSX) или CSV", ("*.xlsx", ".csv")), ("Все файлы", "*.*")))
-    file_chosen_label['text'] = 'Файл "{}" выбран'.format(file_name.split('/')[-1])
+    file_chosen_label['text'] = f'Файл "{file_name.split("/")[-1]}" выбран'
     file_chosen_label['foreground'] = 'green'
     filename, file_extension = os.path.splitext(file_name)
     if file_extension == '.xlsx':
@@ -84,7 +84,7 @@ def add_fig():
 
 
 def add_frames():
-    """Создание рамки со скроллбарами"""
+    """Создание рамки с прокрутками"""
     global second_frame
 
     def on_mousewheel(event):
@@ -97,17 +97,17 @@ def add_frames():
     sec.pack(fill=tk.X, side=tk.BOTTOM)
 
     my_canvas = tk.Canvas(main_frame)
-    my_canvas.pack(side=tk.LEFT, fill=tk.BOTH,expand=1)
+    my_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
 
-    x_scrollbar = ttk.Scrollbar(sec,orient=tk.HORIZONTAL, command=my_canvas.xview)
-    x_scrollbar.pack(side=tk.BOTTOM,fill=tk.X)
+    x_scrollbar = ttk.Scrollbar(sec, orient=tk.HORIZONTAL, command=my_canvas.xview)
+    x_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
 
-    y_scrollbar = ttk.Scrollbar(main_frame,orient=tk.VERTICAL, command=my_canvas.yview)
-    y_scrollbar.pack(side=tk.RIGHT,fill=tk.Y)
+    y_scrollbar = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=my_canvas.yview)
+    y_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
     my_canvas.configure(xscrollcommand=x_scrollbar.set)
     my_canvas.configure(yscrollcommand=y_scrollbar.set)
-    my_canvas.bind("<Configure>",lambda e: my_canvas.config(scrollregion=my_canvas.bbox(tk.ALL)))
+    my_canvas.bind("<Configure>", lambda e: my_canvas.config(scrollregion=my_canvas.bbox(tk.ALL)))
     fig.bind("<MouseWheel>", on_mousewheel)
 
     second_frame = tk.Frame(my_canvas)
@@ -138,7 +138,7 @@ def table_climate():
         return
     
     add_fig()
-    fig.title('Таблица данных "{}"'.format(file_name.split('/')[-1]))
+    fig.title(f'Таблица данных "{file_name.split("/")[-1]}"')
     
     frame = tk.Frame(fig)
     frame.pack(fill='both', expand=True)
@@ -147,7 +147,7 @@ def table_climate():
     pt.show()
 
 
-def raschet():
+def climate_statistics():
     """Статистические характеристики"""
 
     def math_stat(parameter):
@@ -207,7 +207,7 @@ def raschet():
     ttk.Button(second_frame, text='Сохранить в файл', command=export_to_file).pack()
 
 
-def selected_raschet():
+def selected_climate_statistics():
     """Статистические характеристики в указанном диапазоне дат"""
 
     def math_stat(parameter):
@@ -218,8 +218,11 @@ def selected_raschet():
         ttk.Label(second_frame, text=f'Среднеквадратическое отклонение = {round(parameter.iloc[:,0].std(), 2)}').pack()
         ttk.Label(second_frame, text=f'Наименьшее значение = {round(parameter.iloc[:,0].min(), 2)}').pack()
         ttk.Label(second_frame, text=f'Наибольшее значение = {round(parameter.iloc[:,0].max(), 2)}').pack()
-        ttk.Label(second_frame, text=f'Ошибка средней арифметической = {round(parameter.iloc[:,0].std()/parameter.iloc[:, 0].count() ** 0.5, 2)}').pack()
-        ttk.Label(second_frame, text=f'Коэффициент вариации = {round(parameter.iloc[:,0].std()/parameter.iloc[:,0].mean() * 100, 2)}' + ' %' + '\n').pack()
+        ttk.Label(second_frame, 
+                  text=f'Ошибка средней арифметической = {round(parameter.iloc[:,0].std()/parameter.iloc[:, 0].count() ** 0.5, 2)}').pack()
+        ttk.Label(second_frame, 
+                  text=f'Коэффициент вариации = {round(parameter.iloc[:,0].std()/parameter.iloc[:,0].mean() * 100, 2)}' 
+                       + ' %' + '\n').pack()
 
     def export_to_file():
         global stat_file
@@ -258,7 +261,7 @@ def selected_raschet():
 
         ttk.Label(second_frame, text=f'Статистические характеристики в указанном диапазоне дат '
                                      f'({first_date} - {second_date}) "{file_name.split("/")[-1]}"',
-                  font=tkFont.Font(family='Calibri',size=18)).pack()
+                  font=tkFont.Font(family='Calibri', size=18)).pack()
 
         for parameter in result:
             math_stat(parameter.loc[first_date:second_date])
@@ -274,7 +277,7 @@ def graph_climate():
 
     def plot_climate(parameter):
         graphs = Figure(figsize=size, dpi=100)
-        ax = graphs.add_subplot(1,1,1)
+        ax = graphs.add_subplot(1, 1, 1)
         ax.plot(parameter, 'o', markersize=1, label=parameter.columns[0], alpha=0.5)
         ax.set_title(parameter.columns[0])
         graphs.autofmt_xdate()
@@ -300,12 +303,12 @@ def graph_climate():
 
 
 def histo_climate():
-    """Построение гистограм плотсноти распределения"""
+    """Построение гистограмм плотности распределения"""
 
     def hist_climate(parameter):
-        kwargs = dict(bins = 60, histtype = 'stepfilled', alpha=0.5, edgecolor='black')
-        graphs = Figure(figsize=size, dpi = 100)
-        ax = graphs.add_subplot(1,1,1)
+        kwargs = dict(bins=60, histtype='stepfilled', alpha=0.5, edgecolor='black')
+        graphs = Figure(figsize=size, dpi=100)
+        ax = graphs.add_subplot(1, 1, 1)
         ax.hist(parameter, **kwargs)
         ax.minorticks_on()
         ax.xaxis.set_minor_locator(mticker.MultipleLocator(base=1.))
@@ -323,11 +326,13 @@ def histo_climate():
     result = separate_climate(climate)
         
     add_fig()
-    fig.title('Гистограммы плотности распределения климатических характеристик "{}"'.format(file_name.split('/')[-1]))
+    fig.title(f'Гистограммы плотности распределения климатических характеристик "{file_name.split("/")[-1]}"')
     
     add_frames()
 
-    ttk.Label(second_frame, text =  'Гистограммы плотности распределения климатических характеристик "{}" \n'.format(file_name.split('/')[-1]), font=tkFont.Font(family='Calibri',size=32)).pack()
+    ttk.Label(second_frame, text=f'Гистограммы плотности распределения климатических характеристик '
+                                 f'"{file_name.split("/")[-1]}" \n',
+              font=tkFont.Font(family='Calibri', size=32)).pack()
 
     for parameter in result:
         hist_climate(parameter)
@@ -337,8 +342,8 @@ def kde_climate():
     """Построение графиков плотности распределения"""
 
     def kde_parameter(parameter):
-        graphs = Figure(figsize=size, dpi = 100)
-        ax = graphs.add_subplot(1,1,1)
+        graphs = Figure(figsize=size, dpi=100)
+        ax = graphs.add_subplot(1, 1, 1)
         sns.kdeplot(parameter.squeeze(), ax=ax, linewidth=1)
         ax.minorticks_on()
         ax.xaxis.set_minor_locator(mticker.MultipleLocator(base=1.))
@@ -356,17 +361,19 @@ def kde_climate():
     result = separate_climate(climate)
         
     add_fig()
-    fig.title('Графики плотности распределения климатических характеристик "{}"'.format(file_name.split('/')[-1]))
+    fig.title(f'Графики плотности распределения климатических характеристик "{file_name.split("/")[-1]}"')
     
     add_frames()
 
-    ttk.Label(second_frame, text =  'Графики плотности распределения климатических характеристик "{}" \n'.format(file_name.split('/')[-1]), font=tkFont.Font(family='Calibri',size=32)).pack()
+    ttk.Label(second_frame, text=f'Графики плотности распределения климатических характеристик '
+                                 f'"{file_name.split("/")[-1]}" \n',
+              font=tkFont.Font(family='Calibri', size=32)).pack()
     
-    graphs1 = Figure(figsize=size, dpi = 100)
-    ax1 = graphs1.add_subplot(1,1,1)
-    sns.kdeplot(result[0].squeeze(), ax=ax1, color='r', label = 'Максимальная температура', linewidth=1)
-    sns.kdeplot(result[1].squeeze(), ax=ax1, color='b', label = 'Минимальная температура', linewidth=1)
-    sns.kdeplot(result[2].squeeze(), ax=ax1, color = 'g', label = 'Средняя температура', linewidth=1)
+    graphs1 = Figure(figsize=size, dpi=100)
+    ax1 = graphs1.add_subplot(1, 1, 1)
+    sns.kdeplot(result[0].squeeze(), ax=ax1, color='r', label='Максимальная температура', linewidth=1)
+    sns.kdeplot(result[1].squeeze(), ax=ax1, color='b', label='Минимальная температура', linewidth=1)
+    sns.kdeplot(result[2].squeeze(), ax=ax1, color='g', label='Средняя температура', linewidth=1)
     
     ax1.minorticks_on()
     ax1.xaxis.set_minor_locator(mticker.MultipleLocator(base=1.))
@@ -388,8 +395,8 @@ def kde_selected_climate():
     """Построение графиков плотности распределения в указанном диапазоне"""
 
     def kde_selected_parameter(parameter):
-        graphs = Figure(figsize=size, dpi = 100)
-        ax = graphs.add_subplot(1,1,1)
+        graphs = Figure(figsize=size, dpi=100)
+        ax = graphs.add_subplot(1, 1, 1)
         sns.kdeplot(parameter.loc[first_date:second_date].squeeze(), ax=ax, linewidth=1)
         ax.minorticks_on()
         ax.xaxis.set_minor_locator(mticker.MultipleLocator(base=1.))
@@ -406,23 +413,28 @@ def kde_selected_climate():
     # Разделение данных климата
     result = separate_climate(climate)
 
-    first_date = '{}-{}-{}'.format(combobox_start_years.get(), combobox_start_months.get(), combobox_start_days.get())
-    second_date = '{}-{}-{}'.format(combobox_finish_years.get(), combobox_finish_months.get(), combobox_finish_days.get())
+    first_date = f'{combobox_start_years.get()}-{combobox_start_months.get()}-{combobox_start_days.get()}'
+    second_date = f'{combobox_finish_years.get()}-{combobox_finish_months.get()}-{combobox_finish_days.get()}'
         
     try:
         add_fig()
-        fig.title('Графики плотности распределения климатических параметров в указанном диапазоне дат ({} - {}) "{}"'.format(first_date, second_date, file_name.split('/')[-1]))
+        fig.title(f'Графики плотности распределения климатических параметров в указанном диапазоне дат '
+                  f'({first_date} - {second_date}) "{file_name.split("/")[-1]}"')
         
         add_frames()
 
-        ttk.Label(second_frame, text =  'Графики плотности распределения климатических параметров в указанном диапазоне дат ({} - {}) "{}"'.format(first_date, second_date, file_name.split('/')[-1]), 
-                    font=tkFont.Font(family='Calibri',size=24)).pack()
+        ttk.Label(second_frame, text=f'Графики плотности распределения климатических параметров в указанном диапазоне дат '
+                                     f'({first_date} - {second_date}) "{file_name.split("/")[-1]}"',
+                  font=tkFont.Font(family='Calibri', size=24)).pack()
         
-        graphs1 = Figure(figsize=size, dpi = 100)
-        ax1 = graphs1.add_subplot(1,1,1)
-        sns.kdeplot(result[0].loc[first_date:second_date].squeeze(), ax=ax1, color='r', label = 'Максимальная температура', linewidth=1)
-        sns.kdeplot(result[1].loc[first_date:second_date].squeeze(), ax=ax1, color='b', label = 'Минимальная температура', linewidth=1)
-        sns.kdeplot(result[2].loc[first_date:second_date].squeeze(), ax=ax1, color = 'g', label = 'Средняя температура', linewidth=1)
+        graphs1 = Figure(figsize=size, dpi=100)
+        ax1 = graphs1.add_subplot(1, 1, 1)
+        sns.kdeplot(result[0].loc[first_date:second_date].squeeze(), ax=ax1, color='r',
+                    label='Максимальная температура', linewidth=1)
+        sns.kdeplot(result[1].loc[first_date:second_date].squeeze(), ax=ax1, color='b',
+                    label='Минимальная температура', linewidth=1)
+        sns.kdeplot(result[2].loc[first_date:second_date].squeeze(), ax=ax1, color='g',
+                    label='Средняя температура', linewidth=1)
         
         ax1.minorticks_on()
         ax1.xaxis.set_minor_locator(mticker.MultipleLocator(base=1.))
@@ -434,9 +446,8 @@ def kde_selected_climate():
         ax1.legend(loc='best', ncol=3)
         add_canvas(graphs1)
 
-        for i in range(3,7):
+        for i in range(3, 7):
             kde_selected_parameter(result[i])
-
     except:
         fig.destroy()
         mb.showerror("Ошибка", "Не выбран диапазон дат")
@@ -446,63 +457,67 @@ def graph_selected_climate():
     """Построение графиков в указанном диапазоне дат"""
 
     def graph_selected_paramater(parameter):
-        graphs = Figure(figsize=size, dpi = 100)
-        ax = graphs.add_subplot(1,1,1)
-        ax.plot(parameter.loc[first_date:second_date], label = parameter.columns[0], linewidth=1)
+        graphs = Figure(figsize=size, dpi=100)
+        ax = graphs.add_subplot(1, 1, 1)
+        ax.plot(parameter.loc[first_date:second_date], label=parameter.columns[0], linewidth=1)
         ax.minorticks_on()
         ax.grid(True)
         ax.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
         ax.set_title(parameter.columns[0])
         add_canvas(graphs)
 
-
     if file_name == '':
         mb.showerror("Ошибка", "Не выбран файл для обработки")
         return
         
     # Разделение данных климата
-    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate= separate_climate(climate)
+    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate = separate_climate(climate)
         
-    first_date = '{}-{}-{}'.format(combobox_start_years.get(), combobox_start_months.get(), combobox_start_days.get())
-    second_date = '{}-{}-{}'.format(combobox_finish_years.get(), combobox_finish_months.get(), combobox_finish_days.get())
+    first_date = f'{combobox_start_years.get()}-{combobox_start_months.get()}-{combobox_start_days.get()}'
+    second_date = f'{combobox_finish_years.get()}-{combobox_finish_months.get()}-{combobox_finish_days.get()}'
 
     try:
         add_fig()
-        fig.title('Графики распределения климатических характеристик в указанном диапазоне дат ({} - {}) "{}"'.format(first_date, second_date, file_name.split('/')[-1]))
+        fig.title(f'Графики распределения климатических характеристик в указанном диапазоне дат '
+                  f'({first_date} - {second_date}) "{file_name.split("/")[-1]}"')
         
         add_frames()
 
-        ttk.Label(second_frame, text =  'Графики распределения климатических характеристик в указанном диапазоне дат ({} - {}) "{}"'.format(first_date, second_date, file_name.split('/')[-1]), 
-                    font=tkFont.Font(family='Calibri',size=24)).pack()
+        ttk.Label(second_frame, text=f'Графики распределения климатических характеристик в указанном диапазоне дат '
+                                     f'({first_date} - {second_date}) "{file_name.split("/")[-1]}"',
+                  font=tkFont.Font(family='Calibri', size=24)).pack()
         
-        graphs1 = Figure(figsize=size, dpi = 100)
-        ax1 = graphs1.add_subplot(1,1,1)
-        ax1.plot(mean_temp_climate.loc[first_date:second_date], 'g', label = 'Средняя температура', alpha = 0.5, linewidth=1)
+        graphs1 = Figure(figsize=size, dpi=100)
+        ax1 = graphs1.add_subplot(1, 1, 1)
+        ax1.plot(mean_temp_climate.loc[first_date:second_date], 'g', label='Средняя температура',
+                 alpha=0.5, linewidth=1)
     except:
         fig.destroy()
         mb.showerror("Ошибка", "Не выбран диапазон дат")
     else:
-            ax1.plot(max_temp_climate.loc[first_date:second_date], 'r', label = 'Максимальная температура', alpha = 0.5, linewidth=1)
-            ax1.plot(min_temp_climate.loc[first_date:second_date], 'b', label = 'Минимальная температура', alpha = 0.5, linewidth=1)
-            ax1.minorticks_on()
-            ax1.grid(True)
-            ax1.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
-            ax1.set_title('Температура')
-            ax1.legend(loc='best', ncol=3)
-            add_canvas(graphs1)
+        ax1.plot(max_temp_climate.loc[first_date:second_date], 'r',
+                 label='Максимальная температура', alpha=0.5, linewidth=1)
+        ax1.plot(min_temp_climate.loc[first_date:second_date], 'b',
+                 label='Минимальная температура', alpha=0.5, linewidth=1)
+        ax1.minorticks_on()
+        ax1.grid(True)
+        ax1.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
+        ax1.set_title('Температура')
+        ax1.legend(loc='best', ncol=3)
+        add_canvas(graphs1)
 
-            graph_selected_paramater(pressure_climate)
-            graph_selected_paramater(wind_climate)
-            graph_selected_paramater(precipitation_climate)
-            graph_selected_paramater(eff_temp_climate)
+        graph_selected_paramater(pressure_climate)
+        graph_selected_paramater(wind_climate)
+        graph_selected_paramater(precipitation_climate)
+        graph_selected_paramater(eff_temp_climate)
 
 
 def histo_selected_climate():
-    """Построение гистограм плотности распределения в указанном диапазоне дат"""
+    """Построение гистограмм плотности распределения в указанном диапазоне дат"""
 
     def histo_selected_parameter(parameter):
-        graphs = Figure(figsize=size, dpi = 100)
-        ax = graphs.add_subplot(1,1,1)
+        graphs = Figure(figsize=size, dpi=100)
+        ax = graphs.add_subplot(1, 1, 1)
         ax.hist(parameter.loc[first_date:second_date], **kwargs)
         ax.minorticks_on()
         ax.xaxis.set_minor_locator(mticker.MultipleLocator(base=1.))
@@ -512,94 +527,94 @@ def histo_selected_climate():
         ax.set_ylabel('Плотность, N раз')
         add_canvas(graphs)
 
-
     if file_name == '':
         mb.showerror("Ошибка", "Не выбран файл для обработки")
         return
         
     # Разделение данных климата
-    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate= separate_climate(climate)
+    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate = separate_climate(climate)
 
-    first_date = '{}-{}-{}'.format(combobox_start_years.get(), combobox_start_months.get(), combobox_start_days.get())
-    second_date = '{}-{}-{}'.format(combobox_finish_years.get(), combobox_finish_months.get(), combobox_finish_days.get())
+    first_date = f'{combobox_start_years.get()}-{combobox_start_months.get()}-{combobox_start_days.get()}'
+    second_date = f'{combobox_finish_years.get()}-{combobox_finish_months.get()}-{combobox_finish_days.get()}'
         
     try:
         add_fig()
-        fig.title('Гистограммы плотности распределения климатических параметров в указанном диапазоне дат ({} - {}) "{}"'.format(first_date, second_date, file_name.split('/')[-1]))
+        fig.title(f'Гистограммы плотности распределения климатических параметров в указанном диапазоне дат '
+                  f'({first_date} - {second_date}) "{file_name.split("/")[-1]}"')
         
         add_frames()
 
-        ttk.Label(second_frame, text =  'Гистограммы плотности распределения климатических параметров в указанном диапазоне дат ({} - {}) "{}"'.format(first_date, second_date, file_name.split('/')[-1]), 
-                    font=tkFont.Font(family='Calibri',size=24)).pack()
+        ttk.Label(second_frame, text=f'Гистограммы плотности распределения климатических параметров в указанном '
+                                     f'диапазоне дат ({first_date} - {second_date}) "{file_name.split("/")[-1]}"',
+                  font=tkFont.Font(family='Calibri', size=24)).pack()
 
-        kwargs = dict(bins = 60, histtype = 'stepfilled', alpha=0.5, edgecolor='black')
+        kwargs = dict(bins=60, histtype='stepfilled', alpha=0.5, edgecolor='black')
 
-        graphs1 = Figure(figsize=size, dpi = 100)
-        ax1 = graphs1.add_subplot(1,1,1)
+        graphs1 = Figure(figsize=size, dpi=100)
+        ax1 = graphs1.add_subplot(1, 1, 1)
         ax1.hist(max_temp_climate.loc[first_date:second_date], **kwargs)
     except:
         fig.destroy()
         mb.showerror("Ошибка", "Не выбран диапазон дат")
     else:
-            ax1.minorticks_on()
-            ax1.xaxis.set_minor_locator(mticker.MultipleLocator(base=1.))
-            ax1.grid(True)
-            ax1.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
-            ax1.set_title(max_temp_climate.columns[0])
-            ax1.set_ylabel('Плотность, N раз')
-            add_canvas(graphs1)
+        ax1.minorticks_on()
+        ax1.xaxis.set_minor_locator(mticker.MultipleLocator(base=1.))
+        ax1.grid(True)
+        ax1.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
+        ax1.set_title(max_temp_climate.columns[0])
+        ax1.set_ylabel('Плотность, N раз')
+        add_canvas(graphs1)
 
-            histo_selected_parameter(min_temp_climate)
-            histo_selected_parameter(mean_temp_climate)
-            histo_selected_parameter(pressure_climate)
-            histo_selected_parameter(wind_climate)
-            histo_selected_parameter(precipitation_climate)
-            histo_selected_parameter(eff_temp_climate)
+        histo_selected_parameter(min_temp_climate)
+        histo_selected_parameter(mean_temp_climate)
+        histo_selected_parameter(pressure_climate)
+        histo_selected_parameter(wind_climate)
+        histo_selected_parameter(precipitation_climate)
+        histo_selected_parameter(eff_temp_climate)
 
 
 def graph_year_climate():
-    """Построение графиков среднегодичных"""
+    """Построение графиков среднегодовых значений параметров"""
 
     def graph_year_parameter(parameter):
-        graphs = Figure(figsize=size, dpi = 100)
-        ax = graphs.add_subplot(1,1,1)
-        ax.plot(parameter, markersize = 1, linewidth=1)
-        for i_x, i_y in zip(parameter.index, parameter.iloc[:,0]):
-            ax.text(i_x, i_y, '({})'.format("%.1f" % i_y), fontsize=10)
+        graphs = Figure(figsize=size, dpi=100)
+        ax = graphs.add_subplot(1, 1, 1)
+        ax.plot(parameter, markersize=1, linewidth=1)
+        for i_x, i_y in zip(parameter.index, parameter.iloc[:, 0]):
+            ax.text(i_x, i_y, f'({round(i_y, 1)})', fontsize=10)
         ax.minorticks_on()
         ax.grid(True)
         ax.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
         ax.set_title(parameter.columns[0])
         add_canvas(graphs)
 
-
     if file_name == '':
         mb.showerror("Ошибка", "Не выбран файл для обработки")
         return
         
     year_climate = climate.resample('A').mean()
-        # Разделение данных климата
-    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate= separate_climate(year_climate)
+    # Разделение данных климата
+    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate = separate_climate(year_climate)
         
     add_fig()
-    fig.title('Графики распределения среднегодовых значений климатических параметров "{}"'.format(file_name.split('/')[-1]))
+    fig.title(f'Графики распределения среднегодовых значений климатических параметров "{file_name.split("/")[-1]}"')
 
     add_frames()
 
-    ttk.Label(second_frame, text =  'Графики распределения среднегодовых значений климатических параметров "{}"'.format(file_name.split('/')[-1]), 
-                font=tkFont.Font(family='Calibri',size=32)).pack()
+    ttk.Label(second_frame, text=f'Графики распределения среднегодовых значений климатических параметров '
+                                 f'"{file_name.split("/")[-1]}"', font=tkFont.Font(family='Calibri', size=32)).pack()
 
-    graphs1 = Figure(figsize=size, dpi = 100)
-    ax1 = graphs1.add_subplot(1,1,1)
-    ax1.plot(mean_temp_climate, markersize = 1, label = 'Средняя температура', alpha = 0.5, linewidth=1)
-    for i_x, i_y in zip(mean_temp_climate.index, mean_temp_climate.iloc[:,0]):
-        ax1.text(i_x, i_y, '({})'.format("%.1f" % i_y), fontsize=10)
-    ax1.plot(max_temp_climate, markersize = 1,label = 'Максимальная температура', alpha = 0.5, linewidth=1)
-    for i_x, i_y in zip(max_temp_climate.index, max_temp_climate.iloc[:,0]):
-        ax1.text(i_x, i_y, '({})'.format("%.1f" % i_y), fontsize=10)
-    ax1.plot(min_temp_climate, markersize = 1, label = 'Минимальная температура', alpha = 0.5, linewidth=1)
-    for i_x, i_y in zip(min_temp_climate.index, min_temp_climate.iloc[:,0]):
-        ax1.text(i_x, i_y, '({})'.format("%.1f" % i_y), fontsize=10)
+    graphs1 = Figure(figsize=size, dpi=100)
+    ax1 = graphs1.add_subplot(1, 1, 1)
+    ax1.plot(mean_temp_climate, markersize=1, label='Средняя температура', alpha=0.5, linewidth=1)
+    for i_x, i_y in zip(mean_temp_climate.index, mean_temp_climate.iloc[:, 0]):
+        ax1.text(i_x, i_y, f'({round(i_y, 1)})', fontsize=10)
+    ax1.plot(max_temp_climate, markersize=1, label='Максимальная температура', alpha=0.5, linewidth=1)
+    for i_x, i_y in zip(max_temp_climate.index, max_temp_climate.iloc[:, 0]):
+        ax1.text(i_x, i_y, f'({round(i_y , 1)})', fontsize=10)
+    ax1.plot(min_temp_climate, markersize=1, label='Минимальная температура', alpha=0.5, linewidth=1)
+    for i_x, i_y in zip(min_temp_climate.index, min_temp_climate.iloc[:, 0]):
+        ax1.text(i_x, i_y, f'({round(i_y, 1)})', fontsize=10)
     ax1.minorticks_on()
     ax1.grid(True)
     ax1.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
@@ -617,15 +632,14 @@ def graph_month_climate():
     """Построение графиков среднемесячных"""
 
     def graph_month_parameter(parameter):
-        graphs = Figure(figsize=size, dpi = 100)
-        ax = graphs.add_subplot(1,1,1)
-        ax.plot(parameter, markersize = 1,  linewidth=1)
+        graphs = Figure(figsize=size, dpi=100)
+        ax = graphs.add_subplot(1, 1, 1)
+        ax.plot(parameter, markersize=1,  linewidth=1)
         ax.minorticks_on()
         ax.grid(True)
         ax.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
         ax.set_title(parameter.columns[0])
         add_canvas(graphs)
-
 
     if file_name == '':
         mb.showerror("Ошибка", "Не выбран файл для обработки")
@@ -637,12 +651,12 @@ def graph_month_climate():
     max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate= separate_climate(months_climate)
         
     add_fig()
-    fig.title('Графики распределения среднемесячных значений климатических параметров "{}"'.format(file_name.split('/')[-1]))
+    fig.title(f'Графики распределения среднемесячных значений климатических параметров "{file_name.split("/")[-1]}"')
 
     add_frames()
 
-    ttk.Label(second_frame, text =  'Графики распределения среднемесячных значений климатических параметров "{}"'.format(file_name.split('/')[-1]), 
-                font=tkFont.Font(family='Calibri',size=32)).pack()
+    ttk.Label(second_frame, text=f'Графики распределения среднемесячных значений климатических параметров '
+                                 f'"{file_name.split("/")[-1]}"', font=tkFont.Font(family='Calibri', size=32)).pack()
 
     graph_month_parameter(max_temp_climate)
     graph_month_parameter(min_temp_climate)
@@ -657,15 +671,14 @@ def graph_selected_month_climate():
     """Построение графиков среднемесячных в указанном диапазоне"""
 
     def graph_selected_month_parameter(parameter):
-        graphs = Figure(figsize=size, dpi = 100)
-        ax = graphs.add_subplot(1,1,1)
+        graphs = Figure(figsize=size, dpi=100)
+        ax = graphs.add_subplot(1, 1, 1)
         ax.plot(pressure_climate.loc[first_date:second_date], linewidth=1)
         ax.minorticks_on()
         ax.grid(True)
         ax.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
         ax.set_title(parameter.columns[0])
         add_canvas(graphs)
-
 
     if file_name == '':
         mb.showerror("Ошибка", "Не выбран файл для обработки")
@@ -674,40 +687,45 @@ def graph_selected_month_climate():
     months_climate = climate.resample('M').mean()
     
     # Разделение данных климата
-    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate= separate_climate(months_climate)
+    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate = separate_climate(months_climate)
         
-    first_date = '{}-{}-{}'.format(combobox_start_years.get(), combobox_start_months.get(), combobox_start_days.get())
-    second_date = '{}-{}-{}'.format(combobox_finish_years.get(), combobox_finish_months.get(), combobox_finish_days.get())
+    first_date = f'{combobox_start_years.get()}-{combobox_start_months.get()}-{combobox_start_days.get()}'
+    second_date = f'{combobox_finish_years.get()}-{combobox_finish_months.get()}-{combobox_finish_days.get()}'
 
     try:
         add_fig()
-        fig.title('Графики распределения среднемесячных значений климатических параметров в указанном диапазоне дат ({} - {}) "{}"'.format(first_date, second_date, file_name.split('/')[-1]))
+        fig.title(f'Графики распределения среднемесячных значений климатических параметров в указанном диапазоне дат '
+                  f'({first_date} - {second_date}) "{file_name.split("/")[-1]}"')
         
         add_frames()
 
-        ttk.Label(second_frame, text =  'Графики распределения среднемесячных значений климатических параметров в указанном диапазоне дат ({} - {}) "{}"'.format(first_date, second_date, file_name.split('/')[-1]), 
-                font=tkFont.Font(family='Calibri',size=24)).pack()
+        ttk.Label(second_frame, text=f'Графики распределения среднемесячных значений климатических параметров в '
+                                     f'указанном диапазоне дат ({first_date} - {second_date}) "{file_name.split("/")[-1]}"',
+                  font=tkFont.Font(family='Calibri', size=24)).pack()
         
-        graphs1 = Figure(figsize=size, dpi = 100)
-        ax1 = graphs1.add_subplot(1,1,1)
-        ax1.plot(mean_temp_climate.loc[first_date:second_date], 'g', label = 'Средняя температура', alpha = 0.5, linewidth=1)
+        graphs1 = Figure(figsize=size, dpi=100)
+        ax1 = graphs1.add_subplot(1, 1, 1)
+        ax1.plot(mean_temp_climate.loc[first_date:second_date], 'g', label='Средняя температура',
+                 alpha=0.5, linewidth=1)
     except:
         fig.destroy()
         mb.showerror("Ошибка", "Не выбран диапазон дат")
     else:
-            ax1.plot(max_temp_climate.loc[first_date:second_date], 'r', label = 'Максимальная температура', alpha = 0.5, linewidth=1)
-            ax1.plot(min_temp_climate.loc[first_date:second_date], 'b', label = 'Минимальная температура', alpha = 0.5, linewidth=1)
-            ax1.minorticks_on()
-            ax1.grid(True)
-            ax1.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
-            ax1.set_title('Температура')
-            ax1.legend(loc='best', ncol=3)
-            add_canvas(graphs1)
+        ax1.plot(max_temp_climate.loc[first_date:second_date], 'r', label='Максимальная температура',
+                 alpha=0.5, linewidth=1)
+        ax1.plot(min_temp_climate.loc[first_date:second_date], 'b', label='Минимальная температура',
+                 alpha=0.5, linewidth=1)
+        ax1.minorticks_on()
+        ax1.grid(True)
+        ax1.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
+        ax1.set_title('Температура')
+        ax1.legend(loc='best', ncol=3)
+        add_canvas(graphs1)
 
-            graph_selected_month_parameter(pressure_climate)
-            graph_selected_month_parameter(wind_climate)
-            graph_selected_month_parameter(precipitation_climate)
-            graph_selected_month_parameter(eff_temp_climate)
+        graph_selected_month_parameter(pressure_climate)
+        graph_selected_month_parameter(wind_climate)
+        graph_selected_month_parameter(precipitation_climate)
+        graph_selected_month_parameter(eff_temp_climate)
            
         
 def graph_mean_months():
@@ -716,17 +734,16 @@ def graph_mean_months():
     def graph_mean_parameter(parameter):
         by_month_parameter = parameter.groupby(parameter.index.month).mean()
         by_month_parameter.index = mean_index
-        graphs = Figure(figsize=size, dpi = 100)
-        ax = graphs.add_subplot(1,1,1)
+        graphs = Figure(figsize=size, dpi=100)
+        ax = graphs.add_subplot(1, 1, 1)
         ax.plot(by_month_parameter, '-o', linewidth=1)
-        for i_x, i_y in zip(by_month_parameter.index, by_month_parameter.iloc[:,0]):
-            ax.text(i_x, i_y, '({})'.format("%.1f" % i_y))
+        for i_x, i_y in zip(by_month_parameter.index, by_month_parameter.iloc[:, 0]):
+            ax.text(i_x, i_y, f'({round(i_y, 1)})')
         ax.minorticks_on()
         ax.grid(True)
         ax.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
         ax.set_title(by_month_parameter.columns[0])
         add_canvas(graphs)
-
 
     if file_name == '':
         mb.showerror("Ошибка", "Не выбран файл для обработки")
@@ -735,38 +752,38 @@ def graph_mean_months():
     climate_months = climate.resample('M').mean()
     
     # Разделение данных климата
-    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate= separate_climate(climate_months)
+    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate = separate_climate(climate_months)
         
     add_fig()
-    fig.title('Графики распределения среднемесячных значений климатических параметров "{}"'.format(file_name.split('/')[-1]))
+    fig.title(f'Графики распределения среднемесячных значений климатических параметров "{file_name.split("/")[-1]}"')
 
     add_frames()
 
-    ttk.Label(second_frame, text =  'Графики распределения среднемесячных значений климатических параметров "{}"'.format(file_name.split('/')[-1]), 
-                font=tkFont.Font(family='Calibri',size=32)).pack()
+    ttk.Label(second_frame, text=f'Графики распределения среднемесячных значений климатических параметров '
+                                 f'"{file_name.split("/")[-1]}"', font=tkFont.Font(family='Calibri', size=32)).pack()
 
     mean_index = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
 
-    by_month_meantemp = mean_temp_climate.groupby(mean_temp_climate.index.month).mean()
-    by_month_meantemp.index = mean_index
+    by_month_mean_temp = mean_temp_climate.groupby(mean_temp_climate.index.month).mean()
+    by_month_mean_temp.index = mean_index
 
-    by_month_maxtemp = max_temp_climate.groupby(max_temp_climate.index.month).mean()
-    by_month_maxtemp.index = mean_index
+    by_month_max_temp = max_temp_climate.groupby(max_temp_climate.index.month).mean()
+    by_month_max_temp.index = mean_index
 
-    by_month_mintemp = min_temp_climate.groupby(min_temp_climate.index.month).mean()
-    by_month_mintemp.index = mean_index
+    by_month_min_temp = min_temp_climate.groupby(min_temp_climate.index.month).mean()
+    by_month_min_temp.index = mean_index
 
-    graphs1 = Figure(figsize=size, dpi = 100)
-    ax1 = graphs1.add_subplot(1,1,1)
-    ax1.plot(by_month_meantemp, '-o', label = 'Средняя температура по месяцам', linewidth=1)
-    for i_x, i_y in zip(by_month_meantemp.index, by_month_meantemp.iloc[:,0]):
-        ax1.text(i_x, i_y, '({})'.format("%.1f" % i_y))
-    ax1.plot(by_month_maxtemp, '-o',label = 'Максимальная температура', linewidth=1)
-    for i_x, i_y in zip(by_month_maxtemp.index, by_month_maxtemp.iloc[:,0]):
-        ax1.text(i_x, i_y, '({})'.format("%.1f" % i_y))
-    ax1.plot(by_month_mintemp, '-o', label = 'Минимальная температура', linewidth=1)
-    for i_x, i_y in zip(by_month_mintemp.index, by_month_mintemp.iloc[:,0]):
-        ax1.text(i_x, i_y, '({})'.format("%.1f" % i_y))
+    graphs1 = Figure(figsize=size, dpi=100)
+    ax1 = graphs1.add_subplot(1, 1, 1)
+    ax1.plot(by_month_mean_temp, '-o', label='Средняя температура по месяцам', linewidth=1)
+    for i_x, i_y in zip(by_month_mean_temp.index, by_month_mean_temp.iloc[:, 0]):
+        ax1.text(i_x, i_y, f'({round(i_y, 1)})')
+    ax1.plot(by_month_max_temp, '-o', label='Максимальная температура', linewidth=1)
+    for i_x, i_y in zip(by_month_max_temp.index, by_month_max_temp.iloc[:, 0]):
+        ax1.text(i_x, i_y, f'({round(i_y, 1)})')
+    ax1.plot(by_month_min_temp, '-o', label='Минимальная температура', linewidth=1)
+    for i_x, i_y in zip(by_month_min_temp.index, by_month_min_temp.iloc[:, 0]):
+        ax1.text(i_x, i_y, f'({round(i_y, 1)})')
     ax1.minorticks_on()
     ax1.grid(True)
     ax1.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
@@ -787,11 +804,11 @@ def graph_selected_mean_months():
         parameter = parameter.loc[first_date:second_date]
         by_month_parameter = parameter.groupby(parameter.index.month).mean()
         by_month_parameter.index = mean_index
-        graphs = Figure(figsize=size, dpi = 100)
-        ax = graphs.add_subplot(1,1,1)
+        graphs = Figure(figsize=size, dpi=100)
+        ax = graphs.add_subplot(1, 1, 1)
         ax.plot(by_month_parameter, '-o', linewidth=1)
-        for i_x, i_y in zip(by_month_parameter.index, by_month_parameter.iloc[:,0]):
-            ax.text(i_x, i_y, '({})'.format("%.1f" % i_y))
+        for i_x, i_y in zip(by_month_parameter.index, by_month_parameter.iloc[:, 0]):
+            ax.text(i_x, i_y, f'({round(i_y, 1)})')
         ax.minorticks_on()
         ax.grid(True)
         ax.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
@@ -805,46 +822,47 @@ def graph_selected_mean_months():
     climate_months = climate.resample('M').mean()
     
     # Разделение данных климата
-    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate= separate_climate(climate_months)
+    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate = separate_climate(climate_months)
 
-    first_date = '{}-{}-{}'.format(combobox_start_years.get(), combobox_start_months.get(), combobox_start_days.get())
-    second_date = '{}-{}-{}'.format(combobox_finish_years.get(), combobox_finish_months.get(), combobox_finish_days.get())
+    first_date = f'{combobox_start_years.get()}-{combobox_start_months.get()}-{combobox_start_days.get()}'
+    second_date = f'{combobox_finish_years.get()}-{combobox_finish_months.get()}-{combobox_finish_days.get()}'
     mean_index = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
 
     try:
         add_fig()
-        fig.title('Графики распределения среднемесячных значений климатических параметров в указанном диапазоне дат ({} - {}) "{}"'.format(first_date, second_date, file_name.split('/')[-1]))
+        fig.title(f'Графики распределения среднемесячных значений климатических параметров в указанном диапазоне дат '
+                  f'({first_date} - {second_date}) "{file_name.split("/")[-1]}"')
 
         max_temp_climate = max_temp_climate.loc[first_date:second_date]
         min_temp_climate = min_temp_climate.loc[first_date:second_date]
         mean_temp_climate = mean_temp_climate.loc[first_date:second_date]
 
-        by_month_meantemp = mean_temp_climate.groupby(mean_temp_climate.index.month).mean()
-        by_month_meantemp.index = mean_index
+        by_month_mean_temp = mean_temp_climate.groupby(mean_temp_climate.index.month).mean()
+        by_month_mean_temp.index = mean_index
 
-        by_month_maxtemp = max_temp_climate.groupby(max_temp_climate.index.month).mean()
-        by_month_maxtemp.index = mean_index
+        by_month_max_temp = max_temp_climate.groupby(max_temp_climate.index.month).mean()
+        by_month_max_temp.index = mean_index
 
-        by_month_mintemp = min_temp_climate.groupby(min_temp_climate.index.month).mean()
-        by_month_mintemp.index = mean_index
+        by_month_min_temp = min_temp_climate.groupby(min_temp_climate.index.month).mean()
+        by_month_min_temp.index = mean_index
 
         add_frames()
 
-        ttk.Label(second_frame, 
-                  text='Графики распределения среднемесячных значений климатических параметров в указанном диапазоне дат ({} - {}) "{}"'.format(first_date, second_date, file_name.split('/')[-1]),
-                  font=tkFont.Font(family='Calibri',size=20)).pack()
+        ttk.Label(second_frame, text=f'Графики распределения среднемесячных значений климатических параметров в '
+                                     f'указанном диапазоне дат ({first_date} - {second_date}) "{file_name.split("/")[-1]}"',
+                  font=tkFont.Font(family='Calibri', size=20)).pack()
 
         graphs1 = Figure(figsize=size, dpi=100)
         ax1 = graphs1.add_subplot(1, 1, 1)
-        ax1.plot(by_month_meantemp, '-o', label='Средняя температура по месяцам', linewidth=1)
-        for i_x, i_y in zip(by_month_meantemp.index, by_month_meantemp.iloc[:, 0]):
-            ax1.text(i_x, i_y, '({})'.format("%.1f" % i_y))
-        ax1.plot(by_month_maxtemp, '-o', label='Максимальная температура', linewidth=1)
-        for i_x, i_y in zip(by_month_maxtemp.index, by_month_maxtemp.iloc[:,0]):
-            ax1.text(i_x, i_y, '({})'.format("%.1f" % i_y))
-        ax1.plot(by_month_mintemp, '-o', label='Минимальная температура', linewidth=1)
-        for i_x, i_y in zip(by_month_mintemp.index, by_month_mintemp.iloc[:, 0]):
-            ax1.text(i_x, i_y, '({})'.format("%.1f" % i_y))
+        ax1.plot(by_month_mean_temp, '-o', label='Средняя температура по месяцам', linewidth=1)
+        for i_x, i_y in zip(by_month_mean_temp.index, by_month_mean_temp.iloc[:, 0]):
+            ax1.text(i_x, i_y, f'({round(i_y, 1)})')
+        ax1.plot(by_month_max_temp, '-o', label='Максимальная температура', linewidth=1)
+        for i_x, i_y in zip(by_month_max_temp.index, by_month_max_temp.iloc[:, 0]):
+            ax1.text(i_x, i_y, f'({round(i_y, 1)})')
+        ax1.plot(by_month_min_temp, '-o', label='Минимальная температура', linewidth=1)
+        for i_x, i_y in zip(by_month_min_temp.index, by_month_min_temp.iloc[:, 0]):
+            ax1.text(i_x, i_y, f'({round(i_y, 1)})')
         ax1.minorticks_on()
         ax1.grid(True)
         ax1.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
@@ -867,18 +885,18 @@ def graph_compare_mean_months():
     def select_first_range():
         global Date_array_first
         
-        first_date = '{}-{}-{}'.format(combobox_start_years.get(), combobox_start_months.get(), combobox_start_days.get())
-        second_date = '{}-{}-{}'.format(combobox_finish_years.get(), combobox_finish_months.get(), combobox_finish_days.get())
-        first_range_label['text'] = 'Первый диапазон: ({}) - ({})'.format(first_date, second_date)
-        Date_array_first=[first_date, second_date]
+        first_date = f'{combobox_start_years.get()}-{combobox_start_months.get()}-{combobox_start_days.get()}'
+        second_date = f'{combobox_finish_years.get()}-{combobox_finish_months.get()}-{combobox_finish_days.get()}'
+        first_range_label['text'] = f'Первый диапазон: ({first_date}) - ({second_date})'
+        Date_array_first = [first_date, second_date]
         return Date_array_first
 
     def select_second_range():
         global Date_array_second
         
-        first_date = '{}-{}-{}'.format(combobox_start_years.get(), combobox_start_months.get(), combobox_start_days.get())
-        second_date = '{}-{}-{}'.format(combobox_finish_years.get(), combobox_finish_months.get(), combobox_finish_days.get())
-        second_range_label['text'] = 'Второй диапазон: ({}) - ({})'.format(first_date, second_date)
+        first_date = f'{combobox_start_years.get()}-{combobox_start_months.get()}-{combobox_start_days.get()}'
+        second_date = f'{combobox_finish_years.get()}-{combobox_finish_months.get()}-{combobox_finish_days.get()}'
+        second_range_label['text'] = f'Второй диапазон: ({first_date}) - ({second_date})'
         Date_array_second=[first_date, second_date]
         return Date_array_second
 
@@ -896,17 +914,19 @@ def graph_compare_mean_months():
 
                 graphs = Figure(figsize=(17, 7), dpi=100)
                 ax1 = graphs.add_axes([0.1, 0.1, 0.8, 0.8])
-                ax1.plot(by_month_parameter_first, '-o', label = str(Date_array_first[0] + ':' + Date_array_first[1]), alpha=0.5, linewidth=1)
-                for i_x, i_y in zip(by_month_parameter_first.index, by_month_parameter_first.iloc[:,0]):
-                    ax1.text(i_x, i_y, '({}, {})'.format(str(Date_array_first[0] + ':' + Date_array_first[1]), "%.1f" % i_y))
-                ax1.plot(by_month_parameter_second, '-o', label = str(Date_array_second[0] + ':' + Date_array_second[1]), alpha=0.5, linewidth=1)
-                for i_x, i_y in zip(by_month_parameter_second.index, by_month_parameter_second.iloc[:,0]):
-                    ax1.text(i_x, i_y-2, '({}, {})'.format(str(Date_array_second[0] + ':' + Date_array_second[1]), "%.1f" % i_y))
+                ax1.plot(by_month_parameter_first, '-o', label=str(Date_array_first[0] + ':' + Date_array_first[1]),
+                         alpha=0.5, linewidth=1)
+                for i_x, i_y in zip(by_month_parameter_first.index, by_month_parameter_first.iloc[:, 0]):
+                    ax1.text(i_x, i_y, f'({str(Date_array_first[0] + ":" + Date_array_first[1])}, {round(i_y, 1)})')
+                ax1.plot(by_month_parameter_second, '-o', label=str(Date_array_second[0] + ':' + Date_array_second[1]),
+                         alpha=0.5, linewidth=1)
+                for i_x, i_y in zip(by_month_parameter_second.index, by_month_parameter_second.iloc[:, 0]):
+                    ax1.text(i_x, i_y-2, f'({str(Date_array_second[0] + ":" + Date_array_second[1])}, {round(i_y, 1)})')
                 ax1.minorticks_on()
                 ax1.grid(True)
                 ax1.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
                 ax1.set_title(f'{parameter.columns[0]} по месяцам')
-                graphs.legend(loc='lower center', ncol = 3)
+                graphs.legend(loc='lower center', ncol=3)
 
                 add_canvas(graphs)       
             except:
@@ -923,58 +943,67 @@ def graph_compare_mean_months():
     result = separate_climate(climate_months)
 
     add_fig()
-    fig.title('Сравнение двух диапазонов "{}"'.format(file_name.split('/')[-1]))
+    fig.title(f'Сравнение двух диапазонов "{file_name.split("/")[-1]}"')
     add_frames()
         
     # Выбор дат
-    ttk.Label(second_frame, text='Выбор диапазона дат', font=tkFont.Font(family='Calibri',size=18)).pack(side=tk.TOP)
+    ttk.Label(second_frame, text='Выбор диапазона дат', font=tkFont.Font(family='Calibri', size=18)).pack(side=tk.TOP)
 
     start_date_frame = ttk.Frame(second_frame)
     start_date_frame.pack(side=tk.TOP)
-    combobox_start_days = ttk.Combobox(start_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1,32)])
+    combobox_start_days = ttk.Combobox(start_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1, 32)])
     combobox_start_days.current(0)
     combobox_start_days.pack(side=tk.LEFT)
 
-    combobox_start_months = ttk.Combobox(start_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1,13)])
+    combobox_start_months = ttk.Combobox(start_date_frame, textvariable= tk.StringVar(),
+                                         values=[i for i in range(1, 13)])
     combobox_start_months.current(0)
     combobox_start_months.pack(side=tk.LEFT)
 
-    combobox_start_years = ttk.Combobox(start_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1960,2021)])
+    combobox_start_years = ttk.Combobox(start_date_frame, textvariable=tk.StringVar(),
+                                        values=[i for i in range(1960, 2021)])
     combobox_start_years.current(0)
     combobox_start_years.pack(side=tk.LEFT)
 
     finish_date_frame = ttk.Frame(second_frame)
     finish_date_frame.pack(side=tk.TOP)
-    combobox_finish_days = ttk.Combobox(finish_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1,32)])
+    combobox_finish_days = ttk.Combobox(finish_date_frame, textvariable= tk.StringVar(),
+                                        values=[i for i in range(1, 32)])
     combobox_finish_days.current(30)
     combobox_finish_days.pack(side=tk.LEFT)
 
-    combobox_finish_months = ttk.Combobox(finish_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1,13)])
+    combobox_finish_months = ttk.Combobox(finish_date_frame, textvariable= tk.StringVar(),
+                                          values=[i for i in range(1, 13)])
     combobox_finish_months.current(11)
     combobox_finish_months.pack(side=tk.LEFT)
 
-    combobox_finish_years = ttk.Combobox(finish_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1960,2021)])
+    combobox_finish_years = ttk.Combobox(finish_date_frame, textvariable= tk.StringVar(),
+                                         values=[i for i in range(1960, 2021)])
     combobox_finish_years.current(60)
     combobox_finish_years.pack(side=tk.LEFT)
 
-    first_date = '{}-{}-{}'.format(combobox_start_years.get(), combobox_start_months.get(), combobox_start_days.get())
-    second_date = '{}-{}-{}'.format(combobox_finish_years.get(), combobox_finish_months.get(), combobox_finish_days.get())
+    first_date = f'{combobox_start_years.get()}-{combobox_start_months.get()}-{combobox_start_days.get()}'
+    second_date = f'{combobox_finish_years.get()}-{combobox_finish_months.get()}-{combobox_finish_days.get()}'
 
     first_range_selection_frame = ttk.Frame(second_frame)
     first_range_selection_frame.pack(side=tk.TOP)
-    first_range_label = ttk.Label(first_range_selection_frame, text='Первый диапазон: ({}) - ({})'.format(first_date, second_date), font=tkFont.Font(family='Times',size=12))
+    first_range_label = ttk.Label(first_range_selection_frame, text=f'Первый диапазон: ({first_date}) - ({second_date})',
+                                  font=tkFont.Font(family='Times', size=12))
     first_range_label.pack(side=tk.LEFT)
-    select_first_range_button = ttk.Button(first_range_selection_frame, text = 'Изменить первый диапазон', command = select_first_range)
+    select_first_range_button = ttk.Button(first_range_selection_frame, text='Изменить первый диапазон',
+                                           command=select_first_range)
     select_first_range_button.pack(side=tk.LEFT)
     
     second_range_selection_frame = ttk.Frame(second_frame)
     second_range_selection_frame.pack(side=tk.TOP)
-    second_range_label = ttk.Label(second_range_selection_frame, text='Второй диапазон: ({}) - ({})'.format(first_date, second_date), font=tkFont.Font(family='Times',size=12))
+    second_range_label = ttk.Label(second_range_selection_frame, text=f'Второй диапазон: ({first_date}) - ({second_date})',
+                                   font=tkFont.Font(family='Times', size=12))
     second_range_label.pack(side=tk.LEFT)
-    select_second_range_button = ttk.Button(second_range_selection_frame, text = 'Изменить второй диапазон', command = select_second_range)
+    select_second_range_button = ttk.Button(second_range_selection_frame, text='Изменить второй диапазон',
+                                            command=select_second_range)
     select_second_range_button.pack(side=tk.LEFT)
     
-    graph_compare_climate_button = ttk.Button(second_frame, text = 'Построить графики', command = graph_compare_climate)
+    graph_compare_climate_button = ttk.Button(second_frame, text='Построить графики', command=graph_compare_climate)
     graph_compare_climate_button.pack(side=tk.TOP)
 
 
@@ -984,61 +1013,62 @@ def filter(parameter):
     max_filter = int(combobox_filter.get())
     function = combobox_function.get()
 
-    label = ttk.Label(canvas, text=f'Количество дней, когда {str(parameter.columns[0]).lower()} {function} {max_filter}', font=tkFont.Font(family='Calibri',size=18))
+    label = ttk.Label(canvas, text=f'Количество дней, когда {str(parameter.columns[0]).lower()} {function} {max_filter}',
+                      font=tkFont.Font(family='Calibri', size=18))
     canvas.create_window(w, 90, window=label, anchor=tk.N)
 
     y = 120
     ys = []
     for i in range(1960, 1991):
-        filtered_climate = parameter.loc[(parameter.index >= '{}-01-01'.format(i)) &
-                                         (parameter.index <= '{}-12-31'.format(i))]
+        filtered_climate = parameter.loc[(parameter.index >= f'{i}-01-01') &
+                                         (parameter.index <= f'{i}-12-31')]
         if function == '<=':
-            climateilter = filtered_climate.loc[filtered_climate.iloc[:, 0] <= max_filter]
+            climate_filter = filtered_climate.loc[filtered_climate.iloc[:, 0] <= max_filter]
         elif function == '<':
-            climateilter = filtered_climate.loc[filtered_climate.iloc[:, 0] < max_filter]
+            climate_filter = filtered_climate.loc[filtered_climate.iloc[:, 0] < max_filter]
         elif function == '>':
-            climateilter = filtered_climate.loc[filtered_climate.iloc[:, 0] > max_filter]
+            climate_filter = filtered_climate.loc[filtered_climate.iloc[:, 0] > max_filter]
         elif function == '>=':
-            climateilter = filtered_climate.loc[filtered_climate.iloc[:, 0] >= max_filter]
-        ys.append(len(climateilter))
-        filter_label = ttk.Label(canvas, text='{} г. : {} \n'.format(i, len(climateilter)), font=("Calibri", 12))
+            climate_filter = filtered_climate.loc[filtered_climate.iloc[:, 0] >= max_filter]
+        ys.append(len(climate_filter))
+        filter_label = ttk.Label(canvas, text=f'{i} г. : {len(climate_filter)} \n', font=("Calibri", 12))
         canvas.create_window(w-100, y, window=filter_label, anchor=tk.N)
         y += 20
 
     y = 120
     for i in range(1991, 2021):
-        filtered_climate = parameter.loc[(parameter.index >= '{}-01-01'.format(i)) & (parameter.index <= '{}-12-31'.format(i))]
+        filtered_climate = parameter.loc[(parameter.index >= f'{i}-01-01') & (parameter.index <= f'{i}-12-31')]
         if function == '<=':
-            climateilter = filtered_climate.loc[filtered_climate.iloc[:, 0] <= max_filter]
+            climate_filter = filtered_climate.loc[filtered_climate.iloc[:, 0] <= max_filter]
         elif function == '<':
-            climateilter = filtered_climate.loc[filtered_climate.iloc[:, 0] < max_filter]
+            climate_filter = filtered_climate.loc[filtered_climate.iloc[:, 0] < max_filter]
         elif function == '>':
-            climateilter = filtered_climate.loc[filtered_climate.iloc[:, 0] > max_filter]
+            climate_filter = filtered_climate.loc[filtered_climate.iloc[:, 0] > max_filter]
         elif function == '>=':
-            climateilter = filtered_climate.loc[filtered_climate.iloc[:, 0] >= max_filter]
-        ys.append(len(climateilter))
-        filter_label = ttk.Label(canvas, text='{} г. : {} \n'.format(i, len(climateilter)), font=("Calibri", 12))
+            climate_filter = filtered_climate.loc[filtered_climate.iloc[:, 0] >= max_filter]
+        ys.append(len(climate_filter))
+        filter_label = ttk.Label(canvas, text=f'{i} г. : {len(climate_filter)} \n', font=("Calibri", 12))
         canvas.create_window(w+100, y, window=filter_label, anchor=tk.N)
         y += 20
 
     second_frame = tk.Frame(canvas)
-    canvas.create_window((w,750),window= second_frame, anchor="n")
-    graphs1 = Figure(figsize=(12, 5), dpi = 100)
-    ax1 = graphs1.add_subplot(1,1,1)
-    xs = [x for x in range(1960,2021)]
+    canvas.create_window((w, 750), window=second_frame, anchor="n")
+    graphs1 = Figure(figsize=(12, 5), dpi=100)
+    ax1 = graphs1.add_subplot(1, 1, 1)
+    xs = [x for x in range(1960, 2021)]
     ax1.plot(xs, ys, 'o-', linewidth=1)
     for i_x, i_y in zip(xs, ys):
-            ax1.text(i_x, i_y, '{}'.format(i_y))
+        ax1.text(i_x, i_y, f'{i_y}')
     ax1.minorticks_on()
     ax1.grid(True)
     ax1.grid(which="minor", ls=':', color='lightgray', linewidth=0.6)
     ax1.set_title(f'Количество дней, когда {str(parameter.columns[0]).lower()} {function} {max_filter}')
     
-    filter_canvas = FigureCanvasTkAgg(graphs1, second_frame)  #холст
+    filter_canvas = FigureCanvasTkAgg(graphs1, second_frame)  # холст
     filter_canvas.draw()
     filter_canvas.get_tk_widget().pack(side=tk.TOP, expand=True)
     
-    toolbar = NavigationToolbar2Tk(filter_canvas, second_frame)  #управление графиками
+    toolbar = NavigationToolbar2Tk(filter_canvas, second_frame)  # управление графиками
     toolbar.update()
     toolbar.pack(side=tk.TOP, fill=tk.BOTH)
 
@@ -1059,16 +1089,17 @@ def filter_mean_temp():
     max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate = separate_climate(climate)
 
     add_fig()
-    fig.title('Фильтрация средней температуры "{}"'.format(file_name.split('/')[-1]))
-    main_frame=tk.Frame(fig)
+    fig.title(f'Фильтрация средней температуры "{file_name.split("/")[-1]}"')
+    main_frame = tk.Frame(fig)
     main_frame.pack(fill=tk.BOTH, expand=1)
     canvas = tk.Canvas(main_frame)
-    canvas.pack(side=tk.LEFT, fill=tk.BOTH,expand=1)
+    canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
 
-    label_one = ttk.Label(canvas, text='Выберите опорное значение средней температуры и функцию', font=tkFont.Font(family='Calibri',size=18))
+    label_one = ttk.Label(canvas, text='Выберите опорное значение средней температуры и функцию', 
+                          font=tkFont.Font(family='Calibri', size=18))
     canvas.create_window(w, 0, window=label_one, anchor=tk.N)
     
-    combobox_filter = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=[i for i in range(-50,51)])
+    combobox_filter = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=[i for i in range(-50, 51)])
     combobox_filter.current(40)
     canvas.create_window(w+100, 30, window=combobox_filter, anchor=tk.N)
 
@@ -1092,20 +1123,21 @@ def filter_max_temp():
     max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate = separate_climate(climate)
 
     add_fig()
-    fig.title('Фильтрация максимальной температуры "{}"'.format(file_name.split('/')[-1]))
-    main_frame=tk.Frame(fig)
+    fig.title(f'Фильтрация максимальной температуры "{file_name.split("/")[-1]}"')
+    main_frame = tk.Frame(fig)
     main_frame.pack(fill=tk.BOTH, expand=1)
     canvas = tk.Canvas(main_frame)
-    canvas.pack(side=tk.LEFT, fill=tk.BOTH,expand=1)
+    canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
 
-    label_one = ttk.Label(canvas, text='Выберите опорное значение максимальной температуры и функцию', font=tkFont.Font(family='Calibri',size=18))
+    label_one = ttk.Label(canvas, text='Выберите опорное значение максимальной температуры и функцию', 
+                          font=tkFont.Font(family='Calibri', size=18))
     canvas.create_window(w, 0, window=label_one, anchor=tk.N)
     
-    combobox_filter = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=[i for i in range(-50,51)])
+    combobox_filter = ttk.Combobox(main_frame, textvariable=tk.StringVar(), values=[i for i in range(-50, 51)])
     combobox_filter.current(40)
     canvas.create_window(w+100, 30, window=combobox_filter, anchor=tk.N)
 
-    combobox_function = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=['<', '<=', '>', '>='])
+    combobox_function = ttk.Combobox(main_frame, textvariable=tk.StringVar(), values=['<', '<=', '>', '>='])
     combobox_function.current(1)
     canvas.create_window(w-100, 30, window=combobox_function, anchor=tk.N)
 
@@ -1125,20 +1157,21 @@ def filter_min_temp():
     max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate = separate_climate(climate)
 
     add_fig()
-    fig.title('Фильтрация минимальной температуры "{}"'.format(file_name.split('/')[-1]))
-    main_frame=tk.Frame(fig)
+    fig.title(f'Фильтрация минимальной температуры "{file_name.split("/")[-1]}"')
+    main_frame = tk.Frame(fig)
     main_frame.pack(fill=tk.BOTH, expand=1)
     canvas = tk.Canvas(main_frame)
-    canvas.pack(side=tk.LEFT, fill=tk.BOTH,expand=1)
+    canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
 
-    label_one = ttk.Label(canvas, text='Выберите опорное значение минимальной температуры и функцию', font=tkFont.Font(family='Calibri',size=18))
+    label_one = ttk.Label(canvas, text='Выберите опорное значение минимальной температуры и функцию', 
+                          font=tkFont.Font(family='Calibri', size=18))
     canvas.create_window(w, 0, window=label_one, anchor=tk.N)
     
-    combobox_filter = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=[i for i in range(-50,51)])
+    combobox_filter = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=[i for i in range(-50, 51)])
     combobox_filter.current(40)
     canvas.create_window(w+100, 30, window=combobox_filter, anchor=tk.N)
 
-    combobox_function = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=['<', '<=', '>', '>='])
+    combobox_function = ttk.Combobox(main_frame, textvariable=tk.StringVar(), values=['<', '<=', '>', '>='])
     combobox_function.current(1)
     canvas.create_window(w-100, 30, window=combobox_function, anchor=tk.N)
 
@@ -1155,24 +1188,25 @@ def filter_pressure():
         return
     
     # Разделение данных климата
-    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate= separate_climate(climate)
+    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate = separate_climate(climate)
         
     add_fig()
-    fig.title('Фильтрация атмосферного давления "{}"'.format(file_name.split('/')[-1]))
+    fig.title(f'Фильтрация атмосферного давления "{file_name.split("/")[-1]}"')
     
-    main_frame=tk.Frame(fig)
+    main_frame = tk.Frame(fig)
     main_frame.pack(fill=tk.BOTH, expand=1)
     canvas = tk.Canvas(main_frame)
-    canvas.pack(side=tk.LEFT, fill=tk.BOTH,expand=1)
+    canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
 
-    label_one = ttk.Label(canvas, text='Выберите опорное значение атмосферного давления и функцию для сравнения', font=tkFont.Font(family='Calibri',size=18))
+    label_one = ttk.Label(canvas, text='Выберите опорное значение атмосферного давления и функцию для сравнения', 
+                          font=tkFont.Font(family='Calibri', size=18))
     canvas.create_window(w, 0, window=label_one, anchor=tk.N)
     
-    combobox_filter = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=[i for i in range(800,1201)])
+    combobox_filter = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=[i for i in range(800, 1201)])
     combobox_filter.current(200)
     canvas.create_window(w+100, 30, window=combobox_filter, anchor=tk.N)
 
-    combobox_function = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=['<', '<=', '>', '>='])
+    combobox_function = ttk.Combobox(main_frame, textvariable=tk.StringVar(), values=['<', '<=', '>', '>='])
     combobox_function.current(1)
     canvas.create_window(w-100, 30, window=combobox_function, anchor=tk.N)
 
@@ -1189,20 +1223,21 @@ def filter_precipitation():
         return
     
     # Разделение данных климата
-    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate= separate_climate(climate)
+    max_temp_climate, min_temp_climate, mean_temp_climate, pressure_climate, wind_climate, precipitation_climate, eff_temp_climate = separate_climate(climate)
         
     add_fig()
-    fig.title('Фильтрация количества осадков "{}"'.format(file_name.split('/')[-1]))
+    fig.title(f'Фильтрация количества осадков "{file_name.split("/")[-1]}"')
     
-    main_frame=tk.Frame(fig)
+    main_frame = tk.Frame(fig)
     main_frame.pack(fill=tk.BOTH, expand=1)
     canvas = tk.Canvas(main_frame)
-    canvas.pack(side=tk.LEFT, fill=tk.BOTH,expand=1)
+    canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
 
-    label_one = ttk.Label(canvas, text='Выберите опорное значение количества осадков и функцию для сравнения', font=tkFont.Font(family='Calibri',size=18))
+    label_one = ttk.Label(canvas, text='Выберите опорное значение количества осадков и функцию для сравнения', 
+                          font=tkFont.Font(family='Calibri', size=18))
     canvas.create_window(w, 0, window=label_one, anchor=tk.N)
     
-    combobox_filter = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=[i for i in range(0,300)])
+    combobox_filter = ttk.Combobox(main_frame, textvariable= tk.StringVar(), values=[i for i in range(0, 300)])
     combobox_filter.current(20)
     canvas.create_window(w+100, 30, window=combobox_filter, anchor=tk.N)
 
@@ -1219,24 +1254,23 @@ def wind_rose():
 
     def find_coordinates(city_name):
         if city_name in cities["Name"].values:
-            series = cities.loc[cities['Name'] == city_name] #поиск строк данных для городов имя которых равно аргументу функции city_name
-            one_city = series[:1] #выбор первой строки с таким названием (если их несколько)
-            str_coordinates = one_city["Coordinates"].values[0] #получение значения координат в виде строки
-            list_coordinates = str_coordinates.split(", ") #разбиение координат на широту и долготу
-            latitude = float(list_coordinates[0]) #преобразование строкового значения широты в число
-            longitude = float(list_coordinates[1]) #преобразование строкового значения долготы в число
-            result = Point(latitude, longitude) #возврат точки на карте
+            # поиск строк данных для городов имя которых равно аргументу функции city_name
+            series = cities.loc[cities['Name'] == city_name]  
+            one_city = series[:1]  # выбор первой строки с таким названием (если их несколько)
+            str_coordinates = one_city["Coordinates"].values[0]  # получение значения координат в виде строки
+            list_coordinates = str_coordinates.split(", ")  # разбиение координат на широту и долготу
+            latitude = float(list_coordinates[0])  # преобразование строкового значения широты в число
+            longitude = float(list_coordinates[1])  # преобразование строкового значения долготы в число
+            result = Point(latitude, longitude)  # возврат точки на карте
         else:
             result = 0
         return result
     
-
     def to_date(date):
-        format = "%d.%m.%Y"
-        datetime_str = datetime.strptime(date, format)
+        date_format = "%d.%m.%Y"
+        datetime_str = datetime.strptime(date, date_format)
         return datetime_str
     
-
     def get_daily_meteo(city, start, end):
         location = find_coordinates(city)
         period_start = to_date(start)
@@ -1245,25 +1279,23 @@ def wind_rose():
         result = meteo.fetch()
         return result
 
-
     def make_wind_rose():
         try:
-            city = get_daily_meteo(city_entry.get(), '{}.{}.{}'.format(combobox_start_days.get(), combobox_start_months.get(), combobox_start_years.get()),
-                            '{}.{}.{}'.format(combobox_finish_days.get(), combobox_finish_months.get(), combobox_finish_years.get()))
-            graphs = Figure(figsize=(8,6),dpi=100)
+            city = get_daily_meteo(city_entry.get(), 
+                                   f'{combobox_start_days.get()}.{combobox_start_months.get()}.{combobox_start_years.get()}',
+                                   f'{combobox_finish_days.get()}.{combobox_finish_months.get()}.{combobox_finish_years.get()}')
+            graphs = Figure(figsize=(8, 6), dpi=100)
             ws = city["wspd"]
             wd = city["wdir"]
-            ax = WindroseAxes.from_ax(fig = graphs)
+            ax = WindroseAxes.from_ax(fig=graphs)
             ax.bar(wd, ws, normed=True, opening=0.8, edgecolor='white')
-            ax.set_title('Роза ветров {}'.format(city_entry.get()))
+            ax.set_title(f'Роза ветров {city_entry.get()}')
             ax.set_legend(loc='best')
 
             add_canvas(graphs)
-                
         except:
             mb.showinfo(title="Внимание", message="Этот город отсутствует в базе данных")
                 
-        
     cities = pd.read_excel("russian_cities.xlsx")
     
     add_fig()
@@ -1271,49 +1303,55 @@ def wind_rose():
     
     add_frames()
    
-    ttk.Label(second_frame, text='Введите город на английском языке (например Moscow)', font=tkFont.Font(family='Calibri',size=18)).pack(side=tk.TOP)
+    ttk.Label(second_frame, text='Введите город на английском языке (например Moscow)', 
+              font=tkFont.Font(family='Calibri', size=18)).pack(side=tk.TOP)
         
     city_entry = ttk.Entry(second_frame)
     city_entry.pack(side=tk.TOP)
 
-    ttk.Label(second_frame, text='Выбор диапазона дат', font=tkFont.Font(family='Calibri',size=18)).pack(side=tk.TOP)  
+    ttk.Label(second_frame, text='Выбор диапазона дат', font=tkFont.Font(family='Calibri', size=18)).pack(side=tk.TOP)  
     
     start_date_frame = ttk.Frame(second_frame)
     start_date_frame.pack(side=tk.TOP)
-    combobox_start_days = ttk.Combobox(start_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1,32)])
+    combobox_start_days = ttk.Combobox(start_date_frame, textvariable=tk.StringVar(), values=[i for i in range(1, 32)])
     combobox_start_days.current(0)
     combobox_start_days.pack(side=tk.LEFT)
 
-    combobox_start_months = ttk.Combobox(start_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1,13)])
+    combobox_start_months = ttk.Combobox(start_date_frame, textvariable=tk.StringVar(), 
+                                         values=[i for i in range(1, 13)])
     combobox_start_months.current(0)
     combobox_start_months.pack(side=tk.LEFT)
 
-    combobox_start_years = ttk.Combobox(start_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1960,2021)])
+    combobox_start_years = ttk.Combobox(start_date_frame, textvariable=tk.StringVar(), 
+                                        values=[i for i in range(1960, 2021)])
     combobox_start_years.current(0)
     combobox_start_years.pack(side=tk.LEFT)
 
     finish_date_frame = ttk.Frame(second_frame)
     finish_date_frame.pack(side=tk.TOP)
-    combobox_finish_days = ttk.Combobox(finish_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1,32)])
+    combobox_finish_days = ttk.Combobox(finish_date_frame, textvariable=tk.StringVar(), 
+                                        values=[i for i in range(1, 32)])
     combobox_finish_days.current(30)
     combobox_finish_days.pack(side=tk.LEFT)
 
-    combobox_finish_months = ttk.Combobox(finish_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1,13)])
+    combobox_finish_months = ttk.Combobox(finish_date_frame, textvariable=tk.StringVar(), 
+                                          values=[i for i in range(1, 13)])
     combobox_finish_months.current(11)
     combobox_finish_months.pack(side=tk.LEFT)
 
-    combobox_finish_years = ttk.Combobox(finish_date_frame, textvariable= tk.StringVar(), values=[i for i in range(1960,2021)])
+    combobox_finish_years = ttk.Combobox(finish_date_frame, textvariable=tk.StringVar(), 
+                                         values=[i for i in range(1960, 2021)])
     combobox_finish_years.current(60)
     combobox_finish_years.pack(side=tk.LEFT)
 
-    ttk.Button(second_frame, text = 'Построить розу ветров', command=make_wind_rose).pack(side=tk.TOP)
+    ttk.Button(second_frame, text='Построить розу ветров', command=make_wind_rose).pack(side=tk.TOP)
   
 
 def main():
     """Основная функция"""
     global file_name, size, file_chosen_label, w, h, combobox_start_days, combobox_start_months, combobox_start_years, combobox_finish_days, combobox_finish_months, combobox_finish_years
-    file_name = ''  #Переменная с названием файла для обработки
-    size = (18,8)  #Размер графиков
+    file_name = ''  # Переменная с названием файла для обработки
+    size = (18, 8)  # Размер графиков
 
     # Окно приложения
     root = tk.Tk()
@@ -1342,7 +1380,7 @@ def main():
     table_button.grid(row=2, column=0, columnspan=3)
 
     # Кнопка мат статистики
-    math_button = ttk.Button(frame, text='Статистические характеристики', command=raschet)
+    math_button = ttk.Button(frame, text='Статистические характеристики', command=climate_statistics)
     math_button.grid(row=3, column=0, columnspan=3)
 
     # Кнопка построения графиков
@@ -1412,33 +1450,33 @@ def main():
     label_years = ttk.Label(frame, text='Год', font=tkFont.Font(family='Calibri', size=14))
     label_years.grid(row=18, column=2)
 
-    combobox_start_days = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1,32)])
+    combobox_start_days = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1, 32)])
     combobox_start_days.current(0)
     combobox_start_days.grid(row=19, column=0)
 
-    combobox_start_months = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1,13)])
+    combobox_start_months = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1, 13)])
     combobox_start_months.current(0)
     combobox_start_months.grid(row=19, column=1)
 
-    combobox_start_years = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1960,2021)])
+    combobox_start_years = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1960, 2021)])
     combobox_start_years.current(0)
     combobox_start_years.grid(row=19, column=2)
 
-    combobox_finish_days = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1,32)])
+    combobox_finish_days = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1, 32)])
     combobox_finish_days.current(30)
     combobox_finish_days.grid(row=20, column=0)
 
-    combobox_finish_months = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1,13)])
+    combobox_finish_months = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1, 13)])
     combobox_finish_months.current(11)
     combobox_finish_months.grid(row=20, column=1)
 
-    combobox_finish_years = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1960,2021)])
+    combobox_finish_years = ttk.Combobox(frame, textvariable=tk.StringVar(), values=[i for i in range(1960, 2021)])
     combobox_finish_years.current(60)
     combobox_finish_years.grid(row=20, column=2)
 
     # Кнопка мат статистики в диапазоне
     selected_math_button = ttk.Button(frame, text='Статистические характеристики в указанном диапазоне',
-                                      command=selected_raschet)
+                                      command=selected_climate_statistics)
     selected_math_button.grid(row=21, column=0, columnspan=3)
 
     # Кнопка построения графика в диапазоне
